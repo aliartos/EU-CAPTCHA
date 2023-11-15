@@ -28,7 +28,7 @@
     <div>
         <ul id="navigation">
             <button class="btn btn-lg btn-primary" id="textual" onclick="location.href ='/textual'">Textual Captcha</button>
-            <button class="btn btn-lg btn-primary" id="sliding" onclick="location.href ='/sliding'">Sliding Captcha</button>
+            <!-- <button class="btn btn-lg btn-primary" id="sliding" onclick="location.href ='/sliding'">Sliding Captcha</button> -->
         </ul>
     </div>
     <div class="container">
