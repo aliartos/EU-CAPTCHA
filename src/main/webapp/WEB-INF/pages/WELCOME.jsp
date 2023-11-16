@@ -26,6 +26,22 @@
         <meta content="Europa Component Library (ECL) documentation website" name="Description" data-react-helmet="true">
     </head>
     <body class="language-en ecl-typography path-frontpage page-node-type-landing-page">
+    <div class="globan globan-invalid-domain"><b>FOR TESTING PURPOSES ONLY. THIS NOTIFICATION WILL DISAPPEAR ONCE DEPLOYED ON A *.europa.eu site</b></div>
+    <div class="globan globan-dropdown-collapsed dark logo-flag" id="globan" data-nosnippet="true" style="z-index: 40;">
+        <div class="globan-center">
+            <div class="globan-content">
+                <span>An official website of the European Union</span>
+                <span>An official EU website</span>
+                <button aria-controls="globan-dropdown-y3hrzir4ic" aria-expanded="false">How do you know?</button>
+            </div>
+            <div id="globan-dropdown-y3hrzir4ic" class="globan-dropdown" hidden="">
+                <p class="wt-paragraph">All official European Union website addresses are in the <b>europa.eu</b> domain.</p>
+                <p class="wt-paragraph">
+                    <a class="wt-link" href="//europa.eu/european-union/contact/institutions-bodies_en">See all EU institutions and bodies</a>
+                </p>
+            </div>
+        </div>
+        <style>#globan{background-color:#eee;padding:0 0 0 16px;position:relative;line-height:inherit;min-height:28px}#globan,#globan *,#globan *:after,#globan *:before{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}#globan:after{content:""!important;display:block;clear:both}#globan *{font-size:14px;font-family:Arial,Verdana;-webkit-box-sizing:border-box;box-sizing:border-box}#globan [hidden]{display:none}#globan .globan-center{display:inline-block;position:relative}#globan .globan-content{min-height:25px;line-height:25px}#globan .globan-content button{text-decoration:none;color:#444;background-color:#eee;font-weight:400;margin:0 0 0 6px;padding:0 7px;position:relative;display:inline-block;height:8px;min-height:28px;cursor:pointer;border:3px solid rgba(255,255,255,0)}#globan .globan-content button:hover,#globan .globan-content button:focus,#globan .globan-content button:active,#globan.dark .globan-content button:hover,#globan.dark .globan-content button:focus,#globan.dark .globan-content button:active,#globan .globan-content button[aria-expanded="true"],#globan.dark .globan-content button[aria-expanded="true"]{background-color:#fff;color:#004494;outline:none}#globan .globan-content button:focus,#globan .globan-content button:active,#globan.dark .globan-content button:focus,#globan.dark .globan-content button:active{border-color:#ffd617;outline:none}#globan .globan-content button:hover:after,#globan .globan-content button:focus:after,#globan .globan-content button:active:after,#globan.dark .globan-content button:hover:after,#globan.dark .globan-content button:focus:after,#globan.dark .globan-content button:active:after,#globan .globan-content button[aria-expanded="true"]:after,#globan.dark .globan-content button[aria-expanded="true"]:after{background:center center / 12px auto no-repeat transparent url(https://europa.eu/webtools/images/chevron-blue.svg?t=1699970532)}#globan.dark,#globan.dark button{background-color:#404040}#globan.dark .globan-content,#globan.dark .globan-content button{color:#fff}#globan .globan-content button:after{content:" "!important;display:inline-block;width:20px;height:8px;-webkit-transition:all .3s;-moz-transition:all .3s;-o-transition:all .3s;-ms-transition:all .3s;transition:all .3s;margin-left:2px;background:center center / 12px auto no-repeat transparent url(https://europa.eu/webtools/images/chevron-grey.svg?t=1699970532)}#globan.dark .globan-content button:after{background:center center / 12px auto no-repeat transparent url(https://europa.eu/webtools/images/chevron-white.svg?t=1699970532)}#globan .globan-content button[aria-expanded="true"]:after{transform:rotate(-180deg)}#globan.logo-flag .globan-content:before{content:" "!important;display:inline-block;width:24px;height:16px;background:center center / 110% auto no-repeat #004494 url(https://europa.eu/webtools/images/flag.svg?t=1699970532);float:left;margin:5.5px 8px 0 0;border:1px solid #004494}#globan.dark.logo-flag .globan-content:before{border-color:#7f99cc}#globan span{display:none}#globan span:first-child{display:inline-block}#globan .globan-dropdown{background-color:#fff;position:absolute;right:0;top:100%;padding:12px 16px;margin:0;max-width:500px;border:1px solid #ccc;box-shadow:0 4px 5px 0 rgba(0,0,0,.4);-webkit-box-shadow:0 4px 5px 0 rgba(0,0,0,.4);-moz-box-shadow:0 4px 5px 0 rgba(0,0,0,.4);color:#444}#globan .globan-dropdown p{padding:0;margin:0;line-height:1.4}#globan .globan-dropdown p:nth-child(2){margin-top:10px}#globan .globan-dropdown a{color:#004494;text-decoration:none}#globan .globan-dropdown a:hover{text-decoration:underline}#globan.reverse .globan-center{float:right;padding-right:10px}#globan.reverse.logo-flag .globan-content:before{float:right;margin:2px 0 0 10px}#globan.reverse .globan-content{text-align:right}#globan.reverse .globan-content a,#globan.reverse .globan-content a:hover,#globan.reverse .globan-content a:focus,#globan.reverse .globan-content a:active{float:left;margin:0 20px 0 0}#globan.reverse .globan-content a:after{float:left;margin:0 10px 0 0}#globan.reverse .globan-dropdown{left:0;right:auto;direction:rtl}#globan.fixed{position:fixed;left:0;top:0;right:0}.globan-invalid-domain{background-color:#ffd617;color:#444;text-align:center;padding:5px 16px;display:block;margin-left:-16px;font-size:14px;font-family:Arial,Verdana}@media (max-width:820px){#globan{padding-left:5px}#globan .globan-center{display:block}#globan.reverse .globan-center{float:none}#globan span:first-child{display:none}#globan span:nth-child(2){display:inline-block;border-top:3px solid rgba(255,255,255,0)}#globan .globan-content a{float:right}}@media (max-width:600px){#globan .globan-content a,#globan .globan-content a:hover,#globan .globan-content a:focus,#globan .globan-content a:active{display:inline-block;width:30px;padding:0;position:relative;white-space:nowrap;float:right;text-indent:40px;overflow:hidden}#globan .globan-content a:after{position:absolute;left:-3px;top:0;margin:0;width:30px}}@media print{#globan{display:none}}@media all{#globan .globan-invalid-domain{background-color:#ffd617;color:#444;text-align:center;padding:5px 16px;display:block;margin-left:-16px}}</style></div>
         <header class="ecl-site-header-standardised" data-ecl-auto-init="SiteHeaderStandardised" data-ecl-has-menu>
         <div class="ecl-site-header-standardised__header">
             <div class="ecl-site-header-standardised__container ecl-container">
@@ -168,12 +184,21 @@
                                             GitLab folder
                                         </a>.
                                     </p>
-                                    <p dir="auto">Reach out to us! You can send an email to
-                                        <a href="mailto:DIGIT-EU-CAPTCHA@ec.europa.eu">DIGIT-EU-CAPTCHA@ec.europa.eu</a>
-                                        or create a ticket on our
-                                        <a href="https://jira-uniway.atlassian.net/jira/software/c/projects/EC/boards/111">
-                                            Jira
-                                        </a>.
+                                    <p dir="auto">
+                                        Would you like to know more about the managed service? Please reach out to us:
+                                    </p>
+                                    <ul>
+                                        <li>
+                                            Are you working for the European Commission? <br>
+                                            Please send an email to <a href="mailto:ec-helpdesk-it@ec.europa.eu">EC-HELPDESK-IT@ec.europa.eu</a>
+                                        </li>
+                                        <li>
+                                            Are you working for a different EU Institution, Body or Agency? <br>
+                                            Please send an email to <a href="mailto:EC-CENTRAL-HELPDESK@ec.europa.eu">EC-CENTRAL-HELPDESK@ec.europa.eu</a>
+                                        </li>
+                                    </ul>
+                                    <p>
+                                        Please make sure to mention “EU CAPTCHA” in your request.
                                     </p>
                                 </div>
                             </div>
@@ -490,7 +515,7 @@
 
        <!-- <script src="/js/eu/runtime~main.5693af20.js"></script>
         <script src="/js/eu/vendors.ef9f5d65.chunk.js"></script>
-        <script src="/js/eu/main.948b526c.chunk.js"></script> -->
-        <script defer src="https://europa.eu/webtools/load.js?globan=1110" type="text/javascript"></script>
+        <script src="/js/eu/main.948b526c.chunk.js"></script>
+        <script defer src="https://europa.eu/webtools/load.js?globan=1110" type="text/javascript"></script> -->
     </body>
 </html>
