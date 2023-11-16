@@ -1,6 +1,7 @@
 package com.sii.eucaptcha.service;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
+import com.sii.eucaptcha.caching.MemCacheClient;
 import com.sii.eucaptcha.captcha.Captcha;
 import com.sii.eucaptcha.captcha.audio.Sample;
 import com.sii.eucaptcha.captcha.audio.noise.impl.EuCaptchaNoiseProducer;
@@ -342,18 +343,18 @@ public class CaptchaService {
     public boolean validateTextualCaptcha(String captchaId, String captchaAnswer, boolean usingAudio) {
         boolean result = false;
 
-        if (captchaCodeMap.containsKey(captchaId)) {
-            log.debug("Given answer is {}, stored answer is {}", captchaAnswer, captchaCodeMap.get(captchaId));
+        if (getCaptcha(captchaId) != null) {
             //case sensitive
+            String answer = StringUtils.deleteWhitespace(getCaptcha(captchaId));
+            String givenAnswer = StringUtils.deleteWhitespace(captchaAnswer);
             if (!usingAudio) {
-                String answer = StringUtils.deleteWhitespace(captchaCodeMap.get(captchaId));
-                result = StringUtils.equals(answer, captchaAnswer);
+                result = StringUtils.equals(answer, givenAnswer);
             }
             //if the audio is selected , ignore case sensitive
             else {
-                String answer = StringUtils.deleteWhitespace(captchaCodeMap.get(captchaId));
-                result = StringUtils.equalsIgnoreCase(answer, captchaAnswer);
+                result = StringUtils.equalsIgnoreCase(answer, givenAnswer);
             }
+            log.debug("Given answer is {}, stored answer is {}", givenAnswer, answer);
         }
         if(counter == 1) {
             removeCaptcha(captchaId);
@@ -372,11 +373,11 @@ public class CaptchaService {
      * @return Boolean of the verification
      */
     public boolean validateWhatsUpCaptcha(String captchaId, String captchaAnswer) {
-        if (!captchaCodeMap.containsKey(captchaId)) {
+        if (getCaptcha(captchaId) == null) {
             removeCaptcha(captchaId);
             return false;
         }
-        String storedAnswer = captchaCodeMap.get(captchaId);
+        String storedAnswer = getCaptcha(captchaId);
         if(counter == 1) {
             removeCaptcha(captchaId);
             counter = 0;
@@ -391,7 +392,7 @@ public class CaptchaService {
     }
 
     public boolean validateSlidingCaptcha(String captchaId, String captchaAnswer) {
-        if (!captchaCodeMap.containsKey(captchaId)) {
+        if (getCaptcha(captchaId) == null) {
             removeCaptcha(captchaId);
             return false;
         }
@@ -403,6 +404,7 @@ public class CaptchaService {
 
         if(counter == 1) {
             removeCaptcha(captchaId);
+            counter = 0;
         }else {
             counter++;
         }
@@ -428,7 +430,8 @@ public class CaptchaService {
     }
 
     private String[] collectAnswer(String captchaId) {
-        String answer = captchaCodeMap.get(captchaId);
+        String answer = this.getCaptcha(captchaId);
+        //String answer = captchaCodeMap.get(captchaId);
         return answer.split(",");
     }
 
@@ -449,8 +452,28 @@ public class CaptchaService {
      * @param captchaAnswer contains combination of key value
      *                      Captcha ID    =>   Captcha answer
      */
+
     private static void addCaptcha(String captchaId, String captchaAnswer) {
-        captchaCodeMap.putIfAbsent(captchaId, captchaAnswer);
+        try {
+            MemCacheClient.getInstance().add(captchaId, 360 , captchaAnswer);
+            log.info("Added captchaId " + captchaId + " and answer " + captchaAnswer + "in the cache");
+        } catch (IOException e) {
+            captchaCodeMap.putIfAbsent(captchaId, captchaAnswer);
+            log.info("Couldn't add CaptchaId to cache : " + e.getMessage());
+        }
+    }
+
+    private static String getCaptcha(String captchaId) {
+        String answer;
+        try {
+            answer = (String) MemCacheClient.getInstance().get(captchaId);
+            log.info("Found captchaId " + captchaId + "in the cache");
+        } catch (IOException e) {
+            answer = null;
+            captchaCodeMap.containsKey(captchaId);
+            log.info("Couldn't add CaptchaId to cache : " + e.getMessage());
+        }
+        return answer;
     }
 
     /**
@@ -459,7 +482,14 @@ public class CaptchaService {
      * @param captchaId the ID of the Captcha
      */
     private static void removeCaptcha(String captchaId) {
-        captchaCodeMap.remove(captchaId);
+        try {
+            MemCacheClient.getInstance().delete(captchaId);
+            log.info("Removed captchaId " + captchaId + "from cache");
+        } catch (IOException e) {
+            captchaCodeMap.remove(captchaId);
+            log.info("Couldn't remove CaptchaId from cache : " + e.getMessage());
+        }
+
     }
 
     private String formatNumbersIntoString(Locale locale, int[] randomNumbers, String question ) {

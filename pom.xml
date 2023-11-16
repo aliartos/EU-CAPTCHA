@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.10</version>
+			<version>3.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -143,6 +143,12 @@
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
 			<version>71.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/elasticache-java-cluster-client -->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>elasticache-java-cluster-client</artifactId>
+			<version>1.2.1</version>
 		</dependency>
     </dependencies>
 	<build>
