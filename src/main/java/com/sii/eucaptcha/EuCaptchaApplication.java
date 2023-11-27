@@ -8,8 +8,6 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Bean;
 import org.springframework.session.MapSessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
-import org.springframework.session.web.http.CookieSerializer;
-import org.springframework.session.web.http.DefaultCookieSerializer;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,17 +22,6 @@ public class EuCaptchaApplication extends SpringBootServletInitializer {
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(EuCaptchaApplication.class, args);
-	}
-
-	@Bean
-	CookieSerializer cookieSerializer() {
-		DefaultCookieSerializer defaultCookieSerializer = new DefaultCookieSerializer();
-		defaultCookieSerializer.setCookieName("JSESSIONID");
-		defaultCookieSerializer.setUseHttpOnlyCookie(true);
-		defaultCookieSerializer.setCookiePath("/");
-		defaultCookieSerializer.setUseSecureCookie(true);
-		defaultCookieSerializer.setSameSite("none");
-		return defaultCookieSerializer;
 	}
 
 	@Bean
