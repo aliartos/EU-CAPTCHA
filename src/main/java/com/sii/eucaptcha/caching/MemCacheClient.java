@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 public class MemCacheClient {
 
     private String configEndpoint = "eucaptchacache.7yiwwr.cfg.euw1.cache.amazonaws.com";
-    private Integer clusterPort = 1121;
+    private Integer clusterPort = 11211;
 
     private static MemcachedClient client;
 

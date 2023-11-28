@@ -166,7 +166,7 @@ public class CaptchaService {
         int extraHeight = (captchaLength != null && captchaLength > CaptchaConstants.DEFAULT_CAPTCHA_LENGTH) ?
                 (captchaLength - CaptchaConstants.DEFAULT_CAPTCHA_LENGTH) * CaptchaConstants.DEFAULT_UNIT_HEIGHT : 0;
 
-        System.out.println("extraWidth = " + extraWidth + "extraHeight = " + extraHeight);
+        log.debug("extraWidth {} and extraHeight {}", extraWidth, extraHeight);
 
         //Case Reload Captcha
         if (previousCaptchaId != null) {
@@ -221,7 +221,7 @@ public class CaptchaService {
             bao.close();
             captchaPngImage = new String(Base64.getEncoder().encode(imageBytes), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
         InputStream in = captchaAudioService.getChallenge().getAudioInputStream();
@@ -236,7 +236,7 @@ public class CaptchaService {
 
             captchaAudioFile = new String(Base64.getEncoder().encode(audioBytes), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
         String captchaId = this.handleCaptchaId(previousCaptchaId);
@@ -265,7 +265,7 @@ public class CaptchaService {
         try {
             rotationAngle = CaptchaRandom.getRandomRotationAngle(degree);
         } catch (WrongCaptchaRotationDegree wrongCaptchaRotationDegree) {
-            wrongCaptchaRotationDegree.printStackTrace();
+            log.error(wrongCaptchaRotationDegree.getMessage());
         }
 
         String captchaPngImage = "";
@@ -286,13 +286,13 @@ public class CaptchaService {
                 os.close();
                 captchaPngImage = new String(Base64.getEncoder().encode(imageBytes), StandardCharsets.UTF_8);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
 
             //	captchaPngImage = encodedString ;
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
         captchaDataResult.setCaptchaType(CaptchaConstants.WHATS_UP);
@@ -342,7 +342,7 @@ public class CaptchaService {
      */
     public boolean validateTextualCaptcha(String captchaId, String captchaAnswer, boolean usingAudio) {
         boolean result = false;
-
+        log.debug("Service validation method with {} and answer {}", captchaId, captchaAnswer);
         if (getCaptcha(captchaId) != null) {
             //case sensitive
             String answer = StringUtils.deleteWhitespace(getCaptcha(captchaId));
@@ -362,6 +362,7 @@ public class CaptchaService {
         } else {
             counter++;
         }
+        log.info(String.valueOf(result));
         return result;
     }
 
@@ -387,7 +388,7 @@ public class CaptchaService {
         int storedAnswerAsInt = Integer.parseInt(storedAnswer);
         int givenAnswer = Integer.parseInt(captchaAnswer);
 
-        log.debug("stored answer = , givenAnswer = " + storedAnswerAsInt, givenAnswer);
+        log.debug("stored answer = {}, givenAnswer = {}", storedAnswerAsInt, givenAnswer);
         return ((givenAnswer == (storedAnswerAsInt * -1)) || ((givenAnswer <= 0) ? ((givenAnswer * -1 - 360) == storedAnswerAsInt) : ((360 - givenAnswer) == storedAnswerAsInt)));
     }
 
@@ -420,13 +421,11 @@ public class CaptchaService {
     }
 
     private String prepareAnswer (int questionIndex, int minNumber, int maxNumber) {
-        StringBuilder answer = new StringBuilder();
-        return answer.append(questionIndex)
-                .append(",")
-                .append(minNumber)
-                .append(",")
-                .append(maxNumber)
-                .toString();
+        return questionIndex +
+                "," +
+                minNumber +
+                "," +
+                maxNumber;
     }
 
     private String[] collectAnswer(String captchaId) {
@@ -455,22 +454,24 @@ public class CaptchaService {
 
     private static void addCaptcha(String captchaId, String captchaAnswer) {
         try {
-            MemCacheClient.getInstance().add(captchaId, 360 , captchaAnswer);
-            log.info("Added captchaId " + captchaId + " and answer " + captchaAnswer + "in the cache");
+            MemCacheClient.getInstance().add(captchaId, 3600, captchaAnswer);
+            //log.info("Status of the import: {}",fo.get());
+            log.info("Added captchaId {} and answer {} in the cache", captchaId, captchaAnswer);
         } catch (IOException e) {
             captchaCodeMap.putIfAbsent(captchaId, captchaAnswer);
             log.info("Couldn't add CaptchaId to cache : " + e.getMessage());
         }
     }
 
-    private static String getCaptcha(String captchaId) {
+    private String getCaptcha(String captchaId) {
         String answer;
+        log.debug("Inside getCaptcha method with captchaId {}", captchaId);
         try {
             answer = (String) MemCacheClient.getInstance().get(captchaId);
-            log.info("Found captchaId " + captchaId + "in the cache");
+            log.info("Found captchaId {} in the cache with answer {}", captchaId, answer);
         } catch (IOException e) {
             answer = null;
-            captchaCodeMap.containsKey(captchaId);
+            captchaCodeMap.get(captchaId);
             log.info("Couldn't add CaptchaId to cache : " + e.getMessage());
         }
         return answer;
@@ -481,10 +482,10 @@ public class CaptchaService {
      *
      * @param captchaId the ID of the Captcha
      */
-    private static void removeCaptcha(String captchaId) {
+    private void removeCaptcha(String captchaId) {
         try {
             MemCacheClient.getInstance().delete(captchaId);
-            log.info("Removed captchaId " + captchaId + "from cache");
+            log.info("Removed captchaId {} from cache", captchaId);
         } catch (IOException e) {
             captchaCodeMap.remove(captchaId);
             log.info("Couldn't remove CaptchaId from cache : " + e.getMessage());

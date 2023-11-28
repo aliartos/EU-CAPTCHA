@@ -2,8 +2,8 @@ package com.sii.eucaptcha.controller;
 
 import com.google.gson.JsonObject;
 import com.sii.eucaptcha.controller.constants.CaptchaConstants;
-import com.sii.eucaptcha.controller.dto.captcharesult.CaptchaResultDto;
 import com.sii.eucaptcha.controller.dto.captchaquery.CaptchaQueryDto;
+import com.sii.eucaptcha.controller.dto.captcharesult.CaptchaResultDto;
 import com.sii.eucaptcha.service.CaptchaService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -154,7 +154,7 @@ public class CaptchaController {
                 response.addProperty("responseCaptcha", responseCaptcha ? "success" : "fail");
                 return new ResponseEntity<>(response.toString(), HttpStatus.OK);
             } catch (Exception e) {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
         }
     }
