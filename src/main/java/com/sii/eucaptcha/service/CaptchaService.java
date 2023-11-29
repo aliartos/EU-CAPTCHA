@@ -1,7 +1,6 @@
 package com.sii.eucaptcha.service;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
-import com.sii.eucaptcha.caching.MemCacheClient;
 import com.sii.eucaptcha.captcha.Captcha;
 import com.sii.eucaptcha.captcha.audio.Sample;
 import com.sii.eucaptcha.captcha.audio.noise.impl.EuCaptchaNoiseProducer;
@@ -28,6 +27,11 @@ import com.sii.eucaptcha.service.sliding.CaptchaSlidingQuestionService;
 import com.sii.eucaptcha.service.whatsup.CaptchaWhatsUpImagesService;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.expiringmap.ExpiringMap;
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.ClientMode;
+import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.config.NodeEndPoint;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -35,6 +39,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioSystem;
 import java.awt.*;
@@ -45,7 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
+import java.security.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -113,6 +119,8 @@ public class CaptchaService {
 
     private ResourceLoader resourceLoader;
 
+    private MemcachedClient client;
+
     private int counter;
 
     public CaptchaService(CaptchaWhatsUpImagesService captchaWhatsUpImagesService,
@@ -122,6 +130,32 @@ public class CaptchaService {
         this.captchaSlidingQuestionService = captchaSlidingQuestionService;
         this.props = props;
         this.resourceLoader = resourceLoader;
+        initCacheClient();
+    }
+
+    public void initCacheClient() {
+        try {
+            ConnectionFactoryBuilder connectionFactoryBuilder = new ConnectionFactoryBuilder();
+            // Build SSLContext
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init((KeyStore) null);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tmf.getTrustManagers(), null);
+            // Create the client in TLS mode
+            connectionFactoryBuilder.setSSLContext(sslContext);
+            connectionFactoryBuilder.setClientMode(ClientMode.Dynamic);
+            // TLS mode enables hostname verification by default. It is always recommended to do that.
+            connectionFactoryBuilder.setHostnameForTlsVerification("eucaptchacache.7yiwwr.cfg.euw1.cache.amazonaws.com");
+            client = new MemcachedClient(
+                    connectionFactoryBuilder.build(), AddrUtil.getAddresses("eucaptchacache.7yiwwr.cfg.euw1.cache.amazonaws.com:11211"));
+            Collection<NodeEndPoint> endpoints = client.getAllNodeEndPoints();
+            for (NodeEndPoint endPoint : endpoints) {
+                log.info("Available endpoint {} with port {}", endPoint.getHostName(), endPoint.getPort());
+                log.info("Connection is active {}", client.isConfigurationInitialized());
+            }
+        } catch (IOException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -452,28 +486,18 @@ public class CaptchaService {
      *                      Captcha ID    =>   Captcha answer
      */
 
-    private static void addCaptcha(String captchaId, String captchaAnswer) {
-        try {
-            MemCacheClient.getInstance().add(captchaId, 3600, captchaAnswer);
-            //log.info("Status of the import: {}",fo.get());
-            log.info("Added captchaId {} and answer {} in the cache", captchaId, captchaAnswer);
-        } catch (IOException e) {
-            captchaCodeMap.putIfAbsent(captchaId, captchaAnswer);
-            log.info("Couldn't add CaptchaId to cache : " + e.getMessage());
-        }
+    private void addCaptcha(String captchaId, String captchaAnswer) {
+        client.set(captchaId, 3600, captchaAnswer);
+        log.info("Added captchaId {} and answer {} in the cache", captchaId, captchaAnswer);
+        captchaCodeMap.putIfAbsent(captchaId, captchaAnswer);
     }
 
     private String getCaptcha(String captchaId) {
         String answer;
         log.debug("Inside getCaptcha method with captchaId {}", captchaId);
-        try {
-            answer = (String) MemCacheClient.getInstance().get(captchaId);
-            log.info("Found captchaId {} in the cache with answer {}", captchaId, answer);
-        } catch (IOException e) {
-            answer = null;
-            captchaCodeMap.get(captchaId);
-            log.info("Couldn't add CaptchaId to cache : " + e.getMessage());
-        }
+        answer = (String) client.get(captchaId);
+        log.info("Found captchaId {} in the cache with answer {}", captchaId, answer);
+        captchaCodeMap.get(captchaId);
         return answer;
     }
 
@@ -483,14 +507,9 @@ public class CaptchaService {
      * @param captchaId the ID of the Captcha
      */
     private void removeCaptcha(String captchaId) {
-        try {
-            MemCacheClient.getInstance().delete(captchaId);
-            log.info("Removed captchaId {} from cache", captchaId);
-        } catch (IOException e) {
-            captchaCodeMap.remove(captchaId);
-            log.info("Couldn't remove CaptchaId from cache : " + e.getMessage());
-        }
-
+        client.delete(captchaId);
+        log.info("Removed captchaId {} from cache", captchaId);
+        captchaCodeMap.remove(captchaId);
     }
 
     private String formatNumbersIntoString(Locale locale, int[] randomNumbers, String question ) {
