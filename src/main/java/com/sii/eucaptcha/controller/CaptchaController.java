@@ -1,6 +1,7 @@
 package com.sii.eucaptcha.controller;
 
 import com.google.gson.JsonObject;
+import com.sii.eucaptcha.configuration.users.CaptchaUsers;
 import com.sii.eucaptcha.controller.constants.CaptchaConstants;
 import com.sii.eucaptcha.controller.dto.captchaquery.CaptchaQueryDto;
 import com.sii.eucaptcha.controller.dto.captcharesult.CaptchaResultDto;
@@ -26,9 +27,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class CaptchaController {
 
     private final CaptchaService captchaService;
+    private final CaptchaUsers captchaUsers;
 
-    public CaptchaController(CaptchaService captchaService) {
+    public CaptchaController(CaptchaService captchaService, CaptchaUsers captchaUsers) {
         this.captchaService = captchaService;
+        this.captchaUsers = captchaUsers;
     }
 
 
@@ -43,21 +46,27 @@ public class CaptchaController {
             notes = "Returns a captcha image as per locale, captchaLength, type and capitalization or not")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved captcha image"),
-            @ApiResponse(code = 406, message = "Not Acceptable - Locale is missing or invalid")
+            @ApiResponse(code = 406, message = "Not Acceptable - Locale is missing or invalid"),
+            @ApiResponse(code = 400, message = "Token is missing")
     })
     @GetMapping(value = "/captchaImg")
     public CaptchaResultDto getCaptchaImage(@RequestParam(defaultValue = "en-GB", required = false) String locale,
                                             @RequestParam(defaultValue = "8", required = false) Integer captchaLength,
                                             @RequestParam(defaultValue = CaptchaConstants.STANDARD, required = false) String captchaType,
                                             @RequestParam(defaultValue = "true", required = false) boolean capitalized,
-                                            @RequestParam(required = false) Integer degree) {
+                                            @RequestParam(required = false) Integer degree,
+                                            @RequestHeader(required = false) String xJwtString) {
 
-        log.debug("Request with language: {}, length: {}, type: {}, capitalized: {} and degrees: {}",
-                locale, captchaLength, captchaType, capitalized, degree);
+        log.debug("Request with token: {}, language: {}, length: {}, type: {}, capitalized: {} and degrees: {}",
+                xJwtString, locale, captchaLength, captchaType, capitalized, degree);
 
         if (StringUtils.isBlank(locale) || StringUtils.equalsIgnoreCase("Undefined", locale)) {
             log.debug("Locale is missing or invalid!");
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Locale is missing or invalid!");
+        }
+        if (StringUtils.isBlank(xJwtString) || captchaUsers.isNoValidUser(xJwtString)) {
+            log.debug("Token is missing or invalid!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing or invalid!");
         }
 
         CaptchaQueryDto captchaQueryDto = new CaptchaQueryDto.CaptchaQueryDtoBuilder(captchaType)
@@ -65,6 +74,7 @@ public class CaptchaController {
                 .locale(locale)
                 .degree(degree)
                 .capitalized(capitalized)
+                .xJwtString(xJwtString)
                 .build();
 
         return captchaService.generateCaptchaWrapper(captchaQueryDto);
@@ -83,6 +93,7 @@ public class CaptchaController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieved captcha image"),
             @ApiResponse(code = 400, message = "CaptchaId is missing"),
+            @ApiResponse(code = 400, message = "Token is missing"),
             @ApiResponse(code = 406, message = "Not Acceptable - Locale is missing or invalid")
     })
     @GetMapping(value = "/reloadCaptchaImg/{previousCaptchaId}")
@@ -91,14 +102,19 @@ public class CaptchaController {
                                                @RequestParam(required = false) Integer captchaLength,
                                                @RequestParam(defaultValue = CaptchaConstants.STANDARD, required = false) String captchaType,
                                                @RequestParam(required = false) boolean capitalized,
-                                               @RequestParam(required = false) Integer degree) {
+                                               @RequestParam(required = false) Integer degree,
+                                               @RequestHeader(required = false) String xJwtString) {
 
-        log.debug("Reload requested with previousCaptchaId: {}, language: {}, length: {}, type: {}, capitalized: {} and degrees: {}",
-                previousCaptchaId, locale, captchaLength, captchaType, capitalized, degree);
+        log.debug("Reload requested with token: {}, previousCaptchaId: {}, language: {}, length: {}, type: {}, capitalized: {} and degrees: {}",
+                xJwtString, previousCaptchaId, locale, captchaLength, captchaType, capitalized, degree);
 
         if (StringUtils.isBlank(locale) || StringUtils.equalsIgnoreCase("Undefined", locale)) {
             log.debug("Locale is missing or invalid!");
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Locale is missing or invalid!");
+        }
+        if (StringUtils.isBlank(xJwtString) || captchaUsers.isNoValidUser(xJwtString)) {
+            log.debug("Token is missing or invalid!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing or invalid!");
         }
 
         if (StringUtils.isBlank(previousCaptchaId)) {
@@ -113,6 +129,7 @@ public class CaptchaController {
                 .locale(locale)
                 .degree(degree)
                 .capitalized(capitalized)
+                .xJwtString(xJwtString)
                 .build();
         return captchaService.generateCaptchaWrapper(captchaQueryDto);
     }
@@ -129,26 +146,31 @@ public class CaptchaController {
             notes = "Returns success or failed as an answer")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfull response can be success or fail"),
-            @ApiResponse(code = 400, message = "CaptchaId is missing")
+            @ApiResponse(code = 400, message = "CaptchaId is missing"),
+            @ApiResponse(code = 400, message = "Token is missing")
     })
     @PostMapping(value = "/validateCaptcha/{captchaId}")
     public ResponseEntity<String> validateCaptcha(@PathVariable(value = "captchaId", required = false) String captchaId,
                                                   @RequestParam(value = "captchaAnswer", required = false) String captchaAnswer,
                                                   @RequestParam(value = "useAudio", required = false) boolean useAudio,
-                                                  @RequestParam(value = "captchaType", defaultValue = CaptchaConstants.STANDARD, required = false) String captchaType) {
+                                                  @RequestParam(value = "captchaType", defaultValue = CaptchaConstants.STANDARD, required = false) String captchaType,
+                                                  @RequestHeader(required = false) String xJwtString) {
 
-        log.debug("Validation requested with captchaId: {}, captchaAnswer: {}, useAudio: {}, type: {}",
-                captchaId, captchaAnswer, useAudio, captchaType);
+        log.debug("Validation requested with token: {}, captchaId: {}, captchaAnswer: {}, useAudio: {}, type: {}",
+                xJwtString, captchaId, captchaAnswer, useAudio, captchaType);
 
         //check if captchaId is present
         if (StringUtils.isBlank(captchaId)) {
             log.error("CaptchaId is missing!");
             return new ResponseEntity<>("CaptchaId is missing!", HttpStatus.BAD_REQUEST);
+        } else if (StringUtils.isBlank(xJwtString) || captchaUsers.isNoValidUser(xJwtString)) {
+            log.error("Token is missing or invalid!");
+            return new ResponseEntity<>("Token is missing or invalid!", HttpStatus.BAD_REQUEST);
         } else {
             //Verify the validity of the captcha answer.
             try {
                 boolean responseCaptcha;
-                responseCaptcha = captchaService.validateCaptcha(captchaId, captchaAnswer, captchaType, useAudio);
+                responseCaptcha = captchaService.validateCaptcha(xJwtString, captchaId, captchaAnswer, captchaType, useAudio);
                 JsonObject response = new JsonObject();
                 //response captcha ( valid -> success || invalid -> fail  )
                 response.addProperty("responseCaptcha", responseCaptcha ? "success" : "fail");

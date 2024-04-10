@@ -13,6 +13,7 @@ public class CaptchaQueryDto {
     private String captchaType;
     private Integer degree;
     private boolean capitalized;
+    private String xJwtString;
 
 
     public CaptchaQueryDto(CaptchaQueryDtoBuilder captchaQueryDtoBuilder) {
@@ -22,6 +23,7 @@ public class CaptchaQueryDto {
         this.captchaType = captchaQueryDtoBuilder.captchaType;
         this.degree = captchaQueryDtoBuilder.degree;
         this.capitalized = captchaQueryDtoBuilder.capitalized;
+        this.xJwtString = captchaQueryDtoBuilder.xJwtString;
 
     }
 
@@ -53,6 +55,10 @@ public class CaptchaQueryDto {
         return capitalized;
     }
 
+    public String getxJwtString() {
+        return xJwtString;
+    }
+
     @Override
     public String toString() {
         return "CaptchaQueryDto{" +
@@ -70,6 +76,7 @@ public class CaptchaQueryDto {
         private String captchaType;
         private Integer degree;
         private boolean capitalized;
+        private String xJwtString;
 
         public CaptchaQueryDtoBuilder(String captchaType) {
             if (captchaType == null) {
@@ -112,6 +119,11 @@ public class CaptchaQueryDto {
         public CaptchaQueryDtoBuilder capitalized(boolean capitalized) {
                 this.capitalized = capitalized;
                 return this;
+        }
+
+        public CaptchaQueryDtoBuilder xJwtString(String xJwtString) {
+            this.xJwtString = xJwtString;
+            return this;
         }
 
         public CaptchaQueryDto build() {

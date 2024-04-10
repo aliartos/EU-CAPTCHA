@@ -56,10 +56,11 @@ public class CaptchaServiceTest {
     @DisplayName("Test validate captcha methode")
     @Test
     public void validateCaptcha() {
-        when(this.serviceMocked.validateTextualCaptcha(anyString(), anyString(), anyBoolean())).thenReturn(true);
+        when(this.serviceMocked.validateTextualCaptcha(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(true);
         String CaptchaID = "jh0b0t6rad62bgu9cerv91cb5g";
         String CaptchaAnswer = "KAB1";
-        assertTrue(serviceMocked.validateTextualCaptcha(CaptchaID, CaptchaAnswer, true));
+        String xJwtString  = "AAAAA";
+        assertTrue(serviceMocked.validateTextualCaptcha(xJwtString, CaptchaID, CaptchaAnswer, true));
 
     }
 

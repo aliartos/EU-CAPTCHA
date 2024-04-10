@@ -1,5 +1,5 @@
 let useAudio = false;
-let EuCaptchaToken;
+let euCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXh0dWFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.MJfBKb01QKVVafes5DoDDoRAVNios3H_nrWYWZZ30Vs";
 
 function onPlayAudio(){
          useAudio = true;
@@ -44,8 +44,10 @@ function getcaptcha(){
     const getCaptchaUrl = $.ajax({
         type: "GET",
         url: 'api/captchaImg?locale='+ getLanguage() + '&captchaLength='+ getCaptchaLength(window.location.search) + '&capitalized=' + sessionStorage.getItem("capitalized"),
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("xJwtString", euCaptchaToken);
+        },
         success: function (data) {
-            EuCaptchaToken = getCaptchaUrl.getResponseHeader("x-jwtString");
             const jsonData = JSON.parse(data);
             $("#captchaImg").attr("src", "data:image/png;base64," + jsonData.captchaImg);
             $("#captchaImg").attr("captchaId", jsonData.captchaId);
@@ -62,10 +64,9 @@ $(function(){
              beforeSend: function (xhr) {
                  xhr.setRequestHeader("Accept", "application/json");
                  xhr.setRequestHeader("Content-Type", "application/json");
-                 xhr.setRequestHeader("x-jwtString", EuCaptchaToken);
+                 xhr.setRequestHeader("xJwtString", euCaptchaToken);
              },
              success: function (data) {
-                 EuCaptchaToken = reloadCaptchaUrl.getResponseHeader("x-jwtString");
                  const jsonData = JSON.parse(data);
                  $("#captchaImg").attr("src", "data:image/png;base64," + jsonData.captchaImg);
                  $("#captchaImg").attr("captchaId", jsonData.captchaId);
@@ -83,7 +84,7 @@ $(function(){
              beforeSend: function (xhr) {
                  xhr.setRequestHeader("Accept", "application/json");
                  xhr.setRequestHeader("Content-Type", "application/json");
-                 xhr.setRequestHeader("x-jwtString", EuCaptchaToken);
+                 xhr.setRequestHeader("xJwtString", euCaptchaToken);
              },
              data: jQuery.param({
                  captchaAnswer: $("#captchaAnswer").val(),

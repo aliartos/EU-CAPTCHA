@@ -14,6 +14,7 @@ import com.sii.eucaptcha.captcha.text.textProducer.impl.DefaultTextProducer;
 import com.sii.eucaptcha.captcha.text.textRender.impl.CaptchaTextRender;
 import com.sii.eucaptcha.captcha.util.ResourceI18nMapUtil;
 import com.sii.eucaptcha.configuration.properties.SoundConfigProperties;
+import com.sii.eucaptcha.configuration.users.CaptchaUsers;
 import com.sii.eucaptcha.controller.constants.CaptchaConstants;
 import com.sii.eucaptcha.controller.dto.captchaquery.CaptchaQueryDto;
 import com.sii.eucaptcha.controller.dto.captcharesult.CaptchaResultDto;
@@ -103,6 +104,8 @@ public class CaptchaService {
 
     }
 
+    private final CaptchaUsers captchaUsers;
+
     private List<String> fonts = Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
 
     /**
@@ -125,12 +128,13 @@ public class CaptchaService {
 
     public CaptchaService(CaptchaWhatsUpImagesService captchaWhatsUpImagesService,
                           CaptchaSlidingQuestionService captchaSlidingQuestionService, SoundConfigProperties props,
-                          ResourceLoader resourceLoader) {
+                          ResourceLoader resourceLoader, CaptchaUsers captchaUsers) {
         this.captchaWhatsUpImagesService = captchaWhatsUpImagesService;
         this.captchaSlidingQuestionService = captchaSlidingQuestionService;
         this.props = props;
         this.resourceLoader = resourceLoader;
         initCacheClient();
+        this.captchaUsers = captchaUsers;
     }
 
     public void initCacheClient() {
@@ -174,14 +178,14 @@ public class CaptchaService {
 
         switch (captchaQueryDto.getCaptchaType().toUpperCase()) {
             case CaptchaConstants.STANDARD:
-                    captchaDataResult = generateTextualCaptchaImage(previousCaptchaId, captchaQueryDto.getLocale(),
+                    captchaDataResult = generateTextualCaptchaImage(captchaQueryDto.getxJwtString(), previousCaptchaId, captchaQueryDto.getLocale(),
                             captchaQueryDto.getCaptchaLength(), captchaQueryDto.isCapitalized());
                     break;
             case CaptchaConstants.WHATS_UP:
-                    captchaDataResult = generateWhatsUpCaptchaImage(previousCaptchaId, captchaQueryDto.getDegree());
+                    captchaDataResult = generateWhatsUpCaptchaImage(captchaQueryDto.getxJwtString(), previousCaptchaId, captchaQueryDto.getDegree());
                     break;
             case CaptchaConstants.SLIDING:
-                    captchaDataResult = generateSlidingCaptchaImage(previousCaptchaId, captchaQueryDto.getLocale());
+                    captchaDataResult = generateSlidingCaptchaImage(captchaQueryDto.getxJwtString(), previousCaptchaId, captchaQueryDto.getLocale());
                     break;
         }
         return captchaDataResult;
@@ -192,7 +196,7 @@ public class CaptchaService {
      * @param locale            the chosen locale
      * @return String [] which contains the CaptchaID , Captcha Image , and Captcha Audio.
      */
-    public CaptchaResultDto generateTextualCaptchaImage(String previousCaptchaId, Locale locale, Integer captchaLength, boolean capitalized) {
+    public CaptchaResultDto generateTextualCaptchaImage(String xJwtString, String previousCaptchaId, Locale locale, Integer captchaLength, boolean capitalized) {
 
         int extraWidth = (captchaLength != null && captchaLength > CaptchaConstants.DEFAULT_CAPTCHA_LENGTH) ?
                 (captchaLength - CaptchaConstants.DEFAULT_CAPTCHA_LENGTH) * CaptchaConstants.DEFAULT_UNIT_WIDTH : 0;
@@ -282,12 +286,12 @@ public class CaptchaService {
         captchaDataResult.setCaptchaImg(captchaPngImage);
         captchaDataResult.setCaptchaType(CaptchaConstants.STANDARD);
 
-        addCaptcha(captchaId, captcha.getAnswer());
+        addCaptcha(xJwtString, captchaId, captcha.getAnswer());
         log.debug("Generated Captcha with captchaId: {} and answer: {}", captchaId, captcha.getAnswer());
         return captchaDataResult;
     }
 
-    public CaptchaResultDto generateWhatsUpCaptchaImage(String previousCaptchaId, Integer degree) {
+    public CaptchaResultDto generateWhatsUpCaptchaImage(String xJwtString, String previousCaptchaId, Integer degree) {
 
         String captchaId = this.handleCaptchaId(previousCaptchaId);
         //Adding the Captcha image , the captcha ID , the captcha audio file to the String []
@@ -335,12 +339,12 @@ public class CaptchaService {
         captchaDataResult.setDegree(degree);
 
         System.out.println("add to storage captchaId = " + captchaId + " answer = " + rotationAngle);
-        addCaptcha(captchaId, Integer.toString(rotationAngle));
+        addCaptcha(xJwtString, captchaId, Integer.toString(rotationAngle));
 
         return captchaDataResult;
     }
 
-    public CaptchaResultDto generateSlidingCaptchaImage(String previousCaptchaId, Locale locale) {
+    public CaptchaResultDto generateSlidingCaptchaImage(String xJwtString, String previousCaptchaId, Locale locale) {
         counter = 0;
         String captchaId = this.handleCaptchaId(previousCaptchaId);
 
@@ -354,17 +358,17 @@ public class CaptchaService {
         captchaDataResult.setCaptchaQuestion(formatNumbersIntoString(locale, randomNumbers, question));
         captchaDataResult.setCaptchaType(CaptchaConstants.SLIDING);
 
-        addCaptcha(captchaId, prepareAnswer(captchaSlidingQuestionService.getRandomIndex(), randomNumbers[0], randomNumbers[1]));
+        addCaptcha(xJwtString, captchaId, prepareAnswer(captchaSlidingQuestionService.getRandomIndex(), randomNumbers[0], randomNumbers[1]));
         return captchaDataResult;
     }
 
-    public boolean validateCaptcha(String captchaId, String captchaAnswer, String captchaType, boolean usingAudio) {
+    public boolean validateCaptcha(String xJwtString, String captchaId, String captchaAnswer, String captchaType, boolean usingAudio) {
         if (CaptchaConstants.WHATS_UP.equalsIgnoreCase(captchaType)) {
-            return validateWhatsUpCaptcha(captchaId, captchaAnswer);
+            return validateWhatsUpCaptcha(xJwtString, captchaId, captchaAnswer);
         } else if (CaptchaConstants.SLIDING.equalsIgnoreCase(captchaType)) {
-            return validateSlidingCaptcha(captchaId, captchaAnswer);
+            return validateSlidingCaptcha(xJwtString, captchaId, captchaAnswer);
         } else
-            return validateTextualCaptcha(captchaId, captchaAnswer, usingAudio);
+            return validateTextualCaptcha(xJwtString, captchaId, captchaAnswer, usingAudio);
     }
 
     /**
@@ -374,12 +378,12 @@ public class CaptchaService {
      * @param captchaAnswer the users answer on the Captcha
      * @return Boolean of the verification
      */
-    public boolean validateTextualCaptcha(String captchaId, String captchaAnswer, boolean usingAudio) {
+    public boolean validateTextualCaptcha(String xJwtString, String captchaId, String captchaAnswer, boolean usingAudio) {
         boolean result = false;
         log.debug("Service validation method with {} and answer {}", captchaId, captchaAnswer);
-        if (getCaptcha(captchaId) != null) {
-            //case sensitive
-            String answer = StringUtils.deleteWhitespace(getCaptcha(captchaId));
+        //case sensitive
+        String answer = StringUtils.deleteWhitespace(getCaptcha(xJwtString, captchaId));
+        if (answer != null) {
             String givenAnswer = StringUtils.deleteWhitespace(captchaAnswer);
             if (!usingAudio) {
                 result = StringUtils.equals(answer, givenAnswer);
@@ -407,12 +411,13 @@ public class CaptchaService {
      * @param captchaAnswer the users answer on the Captcha
      * @return Boolean of the verification
      */
-    public boolean validateWhatsUpCaptcha(String captchaId, String captchaAnswer) {
-        if (getCaptcha(captchaId) == null) {
+    public boolean validateWhatsUpCaptcha(String xJwtString, String captchaId, String captchaAnswer) {
+        String storedAnswer = getCaptcha(xJwtString, captchaId);
+        if (storedAnswer == null) {
             removeCaptcha(captchaId);
             return false;
         }
-        String storedAnswer = getCaptcha(captchaId);
+
         if(counter == 1) {
             removeCaptcha(captchaId);
             counter = 0;
@@ -426,13 +431,13 @@ public class CaptchaService {
         return ((givenAnswer == (storedAnswerAsInt * -1)) || ((givenAnswer <= 0) ? ((givenAnswer * -1 - 360) == storedAnswerAsInt) : ((360 - givenAnswer) == storedAnswerAsInt)));
     }
 
-    public boolean validateSlidingCaptcha(String captchaId, String captchaAnswer) {
-        if (getCaptcha(captchaId) == null) {
+    public boolean validateSlidingCaptcha(String xJwtString, String captchaId, String captchaAnswer) {
+        if (getCaptcha(xJwtString, captchaId) == null) {
             removeCaptcha(captchaId);
             return false;
         }
         int givenAnswer = Integer.parseInt(captchaAnswer);
-        String[] answer = collectAnswer(captchaId);
+        String[] answer = collectAnswer(xJwtString, captchaId);
         int questionNumber = Integer.parseInt(answer[0]);
         int minimumNumber = Integer.parseInt(answer[1]);
         int maximumNumber = Integer.parseInt(answer[2]);
@@ -462,8 +467,8 @@ public class CaptchaService {
                 maxNumber;
     }
 
-    private String[] collectAnswer(String captchaId) {
-        String answer = this.getCaptcha(captchaId);
+    private String[] collectAnswer(String xJwtString, String captchaId) {
+        String answer = this.getCaptcha(xJwtString, captchaId);
         //String answer = captchaCodeMap.get(captchaId);
         return answer.split(",");
     }
@@ -486,16 +491,21 @@ public class CaptchaService {
      *                      Captcha ID    =>   Captcha answer
      */
 
-    private void addCaptcha(String captchaId, String captchaAnswer) {
+    private void addCaptcha(String xJwtString, String captchaId, String captchaAnswer) {
+        log.info("Inside Add Captcha method");
         client.set(captchaId, 3600, captchaAnswer);
+        String userValue = captchaUsers.getUserValue(xJwtString);
+        log.info(userValue);
+        updateCounter(userValue, "GET");
         log.info("Added captchaId {} and answer {} in the cache", captchaId, captchaAnswer);
         captchaCodeMap.putIfAbsent(captchaId, captchaAnswer);
     }
 
-    private String getCaptcha(String captchaId) {
+    private String getCaptcha(String xJwtString, String captchaId) {
         String answer;
         log.debug("Inside getCaptcha method with captchaId {}", captchaId);
         answer = (String) client.get(captchaId);
+        updateCounter(captchaUsers.getUserValue(xJwtString), "VALIDATE");
         log.info("Found captchaId {} in the cache with answer {}", captchaId, answer);
         captchaCodeMap.get(captchaId);
         return answer;
@@ -528,6 +538,48 @@ public class CaptchaService {
             String minQuestion = question.replace("{min}", ruleBasedNumberFormat.format(randomNumbers[0]));
             return minQuestion.replace("{max}", ruleBasedNumberFormat.format(randomNumbers[1]));
         }
+    }
+
+    private void updateCounter(String userValue, String method) {
+        log.info("Uservalue: {}, method: {}", userValue, method);
+        if(method.equalsIgnoreCase("GET")) {
+            Integer counter = (Integer) client.get(userValue + "getCounter");
+            if(counter == null) {
+                client.set(userValue + "getCounter", 90000, 1);
+            } else {
+                client.set(userValue + "getCounter", 90000, ++counter);
+            }
+        } else {
+            Integer counter = (Integer) client.get(userValue + "validateCounter");
+            if(counter == null) {
+                client.set(userValue + "validateCounter", 90000, 1);
+            } else {
+                client.set(userValue + "validateCounter", 90000, ++counter);
+            }
+        }
+    }
+
+    public Map<String, Integer> getReportingStatistics() {
+        Map<String, Integer> statistics = new HashMap<>();
+        for(Map.Entry<String, String> entry : captchaUsers.getValidUsers().entrySet()) {
+            String userValue = entry.getValue();
+            statistics.put(userValue + " getRequests:", this.getUserCount(userValue, "GET" ));
+            statistics.put(userValue + " validateRequests:", this.getUserCount(userValue, "VALIDATE" ));
+        }
+        return statistics;
+    }
+
+    public Integer getUserCount(String userValue, String method) {
+        if(method.equalsIgnoreCase("GET")) {
+            Integer getCounter = (Integer) client.get(userValue + "getCounter");
+            client.set(userValue + "getCounter", 90000, 0);
+            return getCounter;
+        } else {
+            Integer validateCounter = (Integer) client.get(userValue + "validateCounter");
+            client.set(userValue + "validateCounter", 90000, 0);
+            return validateCounter;
+        }
+
     }
 
 }

@@ -1,6 +1,5 @@
 package com.sii.eucaptcha.configuration.filter;
 
-import com.sii.eucaptcha.security.JwtToken;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -13,10 +12,8 @@ import java.io.IOException;
 
 @Component
 public class HeaderFilterAdder extends OncePerRequestFilter {
-    private final JwtToken jwtToken;
 
-    public HeaderFilterAdder(JwtToken jwtToken) {
-        this.jwtToken = jwtToken;
+    public HeaderFilterAdder() {
     }
 
     @Override
@@ -28,15 +25,13 @@ public class HeaderFilterAdder extends OncePerRequestFilter {
                     .addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
             httpServletResponse
                     .addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
-                            "*, Access-Control-Allow-Headers, X-Requested-With, x-jwtString, Content-Type, cache-control, Authorization");
+                            "*, Access-Control-Allow-Headers, X-Requested-With, xJwtString, Content-Type, cache-control, Authorization");
             httpServletResponse
-                    .addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "x-jwtString");
+                    .addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "xJwtString");
             httpServletResponse
                     .addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Type");
             httpServletResponse
                     .addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,"POST, GET, HEAD, OPTIONS");
-            httpServletResponse
-                    .addHeader("x-jwtString" , jwtToken.generateJwtToken());
         }
         if(httpServletRequest.getRequestURI().contains("reloadCaptchaImg")){
             httpServletResponse
@@ -45,15 +40,13 @@ public class HeaderFilterAdder extends OncePerRequestFilter {
                     .addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
             httpServletResponse.
                     addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
-                            "*, Access-Control-Allow-Headers, X-Requested-With, x-jwtString, Content-Type, cache-control, Authorization");
+                            "*, Access-Control-Allow-Headers, X-Requested-With, xJwtString, Content-Type, cache-control, Authorization");
             httpServletResponse
-                    .addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "x-jwtString");
+                    .addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "xJwtString");
             httpServletResponse
                     .addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Type");
             httpServletResponse
                     .addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,"POST, GET, HEAD, OPTIONS");
-            httpServletResponse
-                    .addHeader("x-jwtString" ,httpServletRequest.getHeader("x-jwtString") );
         }
         if("OPTIONS".equals(httpServletRequest.equals(httpServletRequest.getMethod()))) {
             httpServletResponse.setStatus(HttpServletResponse.SC_OK);

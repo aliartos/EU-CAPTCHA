@@ -1,4 +1,4 @@
-let EuCaptchaToken;
+let EuCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJSb3RhdGlvbmFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.TOBYx7lCfZJ1dmWFvhymzV7-z5LciQhOpZqF86V7D6c";
 let degrees = 0 ;
 
 function getLastSelectedValue(){
@@ -23,9 +23,11 @@ $(function(){
         const getCaptchaUrl = $.ajax({
             type: "GET",
             url: 'api/captchaImg?captchaType=WHATS_UP&locale='+ getLanguage(),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("xJwtString", euCaptchaToken);
+            },
             success: function (data) {
                 console.log(getLanguage())
-                EuCaptchaToken = getCaptchaUrl.getResponseHeader("x-jwtString");
                 const jsonData = JSON.parse(data);
                 $("#captchaImage").attr("src", "data:image/png;base64," + jsonData.captchaImg);
                 $("#captchaImage").attr("captchaId", jsonData.captchaId);
@@ -41,10 +43,9 @@ $(function(){
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Accept", "application/json");
                 xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.setRequestHeader("x-jwtString", EuCaptchaToken);
+                xhr.setRequestHeader("xJwtString", EuCaptchaToken);
             },
             success: function (data) {
-                EuCaptchaToken = reloadCaptchaUrl.getResponseHeader("x-jwtString");
                 const jsonData = JSON.parse(data);
                 $("#captchaImage").attr("src", "data:image/png;base64," + jsonData.captchaImg);
                 $("#captchaImage").attr("captchaId", jsonData.captchaId);
@@ -61,7 +62,7 @@ $(function(){
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Accept", "application/json");
                 xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.setRequestHeader("x-jwtString", EuCaptchaToken);
+                xhr.setRequestHeader("xJwtString", EuCaptchaToken);
             },
             data: jQuery.param({
                 captchaAnswer: $("#captchaAnswer").val()+"",
