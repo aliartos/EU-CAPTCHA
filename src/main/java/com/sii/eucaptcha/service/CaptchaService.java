@@ -563,23 +563,18 @@ public class CaptchaService {
         Map<String, Integer> statistics = new HashMap<>();
         for(Map.Entry<String, String> entry : captchaUsers.getValidUsers().entrySet()) {
             String userValue = entry.getValue();
-            statistics.put(userValue + " getRequests:", this.getUserCount(userValue, "GET" ));
-            statistics.put(userValue + " validateRequests:", this.getUserCount(userValue, "VALIDATE" ));
+            statistics.put(userValue + " getRequests", this.getUserCount(userValue, "GET" ));
+            statistics.put(userValue + " validateRequests", this.getUserCount(userValue, "VALIDATE" ));
         }
         return statistics;
     }
 
     public Integer getUserCount(String userValue, String method) {
         if(method.equalsIgnoreCase("GET")) {
-            Integer getCounter = (Integer) client.get(userValue + "getCounter");
-            client.set(userValue + "getCounter", 90000, 0);
-            return getCounter;
+            return (Integer) client.get(userValue + "getCounter");
         } else {
-            Integer validateCounter = (Integer) client.get(userValue + "validateCounter");
-            client.set(userValue + "validateCounter", 90000, 0);
-            return validateCounter;
+            return (Integer) client.get(userValue + "validateCounter");
         }
-
     }
 
 }

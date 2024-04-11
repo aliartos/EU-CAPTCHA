@@ -1,4 +1,4 @@
-let EuCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJSb3RhdGlvbmFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.TOBYx7lCfZJ1dmWFvhymzV7-z5LciQhOpZqF86V7D6c";
+let euCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJSb3RhdGlvbmFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.TOBYx7lCfZJ1dmWFvhymzV7-z5LciQhOpZqF86V7D6c";
 let degrees = 0 ;
 
 function getLastSelectedValue(){
@@ -43,7 +43,7 @@ $(function(){
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Accept", "application/json");
                 xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.setRequestHeader("xJwtString", EuCaptchaToken);
+                xhr.setRequestHeader("xJwtString", euCaptchaToken);
             },
             success: function (data) {
                 const jsonData = JSON.parse(data);
@@ -62,7 +62,7 @@ $(function(){
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Accept", "application/json");
                 xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.setRequestHeader("xJwtString", EuCaptchaToken);
+                xhr.setRequestHeader("xJwtString", euCaptchaToken);
             },
             data: jQuery.param({
                 captchaAnswer: $("#captchaAnswer").val()+"",

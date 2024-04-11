@@ -19,15 +19,9 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by: Eddy Hoevenaers
@@ -42,7 +36,7 @@ public class ScheduledTasks {
     private CaptchaUsers captchaUsers;
     private CaptchaService captchaService;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy") ;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss") ;
     private String bucketName = "eu-captcha-dev-onboarding-eu-west-1";
     private String logBucketName = "eu-captcha-dev-logging-eu-west-1";
     private String usersFileName = "eu_captcha_reusers.txt";
