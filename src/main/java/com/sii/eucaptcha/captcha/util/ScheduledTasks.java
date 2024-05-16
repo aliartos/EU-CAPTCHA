@@ -15,7 +15,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-
+import sun.util.logging.resources.logging;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
@@ -36,9 +36,11 @@ public class ScheduledTasks {
     private CaptchaUsers captchaUsers;
     private CaptchaService captchaService;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss") ;
-    private String bucketName = "eu-captcha-dev-onboarding-eu-west-1";
-    private String logBucketName = "eu-captcha-dev-logging-eu-west-1";
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+    // Replace this with your AWS bucket name for the daily counters
+    private String bucketName = "";
+    // Replace this with your AWS bucket name for logging
+    private String logBucketName = "";
     private String usersFileName = "eu_captcha_reusers.txt";
 
     public ScheduledTasks(ResourceLoader resourceLoader, CaptchaUsers captchaUsers, CaptchaService captchaService) {
@@ -54,6 +56,7 @@ public class ScheduledTasks {
         captchaUsers.setValidUsers(FileUtil.readFile(loadFile("captcha-users.txt").toString()));
     }
 
+    // Executed every 10 minutes
     @Scheduled(fixedDelay = 600000)
     public void readUserFile() {
         log.info("Started download user file");
@@ -61,14 +64,16 @@ public class ScheduledTasks {
         captchaUsers.setValidUsers(FileUtil.readFile(loadFile("captcha-users.txt").toString()));
     }
 
-    @Scheduled(fixedDelay = 600000)
+    //Executed once a day
+    @Scheduled(fixedDelay = 86400000)
     public void uploadCounterFile() {
         FileUtil.writeFile(loadFile("user-counter.txt").toString(), captchaService.getReportingStatistics());
         log.info("Started upload counter file");
-        uploadObjectToAws(getS3Client(), bucketName, "users-counter_" + dateFormat.format(new Date()) + ".txt"
+        uploadObjectToAws(getS3Client(), bucketName, "/counters/daily/users-counter_" + dateFormat.format(new Date()) + ".txt"
                 , loadFile("user-counter.txt").toString());
     }
 
+    //Executed once a day
     @Scheduled(fixedDelay = 86400000)
     public void uploadLogFile() {
         log.info("Started upload log file");
