@@ -2,14 +2,20 @@ package com.sii.eucaptcha.captcha.util;
 
 import com.sii.eucaptcha.captcha.audio.Sample;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 public class FileUtil {
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
     /**
      * Get a file resource and return it as an InputStream. Intended primarily
@@ -85,9 +91,20 @@ public class FileUtil {
         }
     }
 
+    public static void writeCsvFile(String filePath, Map<String, Integer> userCounts) {
+
+        try (CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(filePath), CSVFormat.DEFAULT)) {
+            for(Map.Entry<String, Integer> entry : userCounts.entrySet()) {
+                csvPrinter.printRecord(entry.getKey(), entry.getValue(), dateFormat.format(new Date()));
+            }
+        } catch (IOException e) {
+            log.info(e.getMessage());
+        }
+    }
+
     public static void copyFile() {
         File src = new File("./logs/eu-application.log");
-        File dest = new File("src/main/resources/");
+        File dest = new File("src/main/resources/eu-application.log");
         try {
             FileUtils.copyFile(src, dest);
         } catch (IOException e) {

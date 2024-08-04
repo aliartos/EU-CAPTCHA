@@ -149,9 +149,9 @@ public class CaptchaService {
             connectionFactoryBuilder.setSSLContext(sslContext);
             connectionFactoryBuilder.setClientMode(ClientMode.Dynamic);
             // TLS mode enables hostname verification by default. It is always recommended to do that.
-            connectionFactoryBuilder.setHostnameForTlsVerification("eucaptchacache.7yiwwr.cfg.euw1.cache.amazonaws.com");
+            connectionFactoryBuilder.setHostnameForTlsVerification("AWS hostname");
             client = new MemcachedClient(
-                    connectionFactoryBuilder.build(), AddrUtil.getAddresses("eucaptchacache.7yiwwr.cfg.euw1.cache.amazonaws.com:11211"));
+                    connectionFactoryBuilder.build(), AddrUtil.getAddresses("AWS host and port"));
             Collection<NodeEndPoint> endpoints = client.getAllNodeEndPoints();
             for (NodeEndPoint endPoint : endpoints) {
                 log.info("Available endpoint {} with port {}", endPoint.getHostName(), endPoint.getPort());
@@ -570,6 +570,9 @@ public class CaptchaService {
     }
 
     public Integer getUserCount(String userValue, String method) {
+        if(client == null) {
+            initCacheClient();
+        }
         if(method.equalsIgnoreCase("GET")) {
             return (Integer) client.get(userValue + "getCounter");
         } else {
