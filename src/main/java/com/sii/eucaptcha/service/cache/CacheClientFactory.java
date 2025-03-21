@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Factory for creating the appropriate cache client based on configuration.
@@ -19,7 +19,7 @@ public class CacheClientFactory {
 
     private final MemcachedCacheClient memcachedCacheClient;
     private final RedisCacheClient redisCacheClient;
-    
+
     private CacheClient cacheClient;
 
     @Autowired
@@ -27,7 +27,7 @@ public class CacheClientFactory {
         this.memcachedCacheClient = memcachedCacheClient;
         this.redisCacheClient = redisCacheClient;
     }
-    
+
     @PostConstruct
     public void init() {
         if ("redis".equalsIgnoreCase(cacheType)) {
@@ -37,15 +37,15 @@ public class CacheClientFactory {
             log.info("Using Memcached cache client");
             cacheClient = memcachedCacheClient;
         }
-        
+
         cacheClient.init();
-        
+
         if (!cacheClient.isInitialized()) {
             log.error("Failed to initialize cache client of type: {}", cacheType);
             throw new RuntimeException("Failed to initialize cache client");
         }
     }
-    
+
     public CacheClient getCacheClient() {
         return cacheClient;
     }

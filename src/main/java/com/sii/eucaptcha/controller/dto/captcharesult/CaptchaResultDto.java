@@ -1,37 +1,38 @@
 package com.sii.eucaptcha.controller.dto.captcharesult;
 
 import com.sii.eucaptcha.controller.constants.CaptchaConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.io.Serializable;
 
 public class CaptchaResultDto implements Serializable {
-    @ApiModelProperty(
-            value = "Generated ID of the Captcha",
+
+    @Schema(
+            description = "Generated ID of the Captcha",
             name = "captchaId",
-            dataType = "String",
+            type = "string",
             example = "mj0kvg8s39sufq9uj8cs5ckorj"
     )
     private String captchaId ;
-    @ApiModelProperty(
-            value = "The CaptchaImage",
+    @Schema(
+            description = "The CaptchaImage",
             name = "captchaImg",
-            dataType = "String",
+            type = "string",
             example = "iVBORw0KGgoAAAANSUhEUgAAAZAAAADICAIAAABJdyC//..."
     )
     private String captchaImg ;
-    @ApiModelProperty(
-            value = "Type of the Captcha",
+    @Schema(
+            description = "Type of the Captcha",
             name = "captchaType",
-            dataType = "String",
+            type = "string",
             example = "STANDARD for textual captcha or WHATS_UP for rotated image captcha"
     )
     private String captchaType = CaptchaConstants.STANDARD;
 
-    @ApiModelProperty(
-            value = "The Captcha question",
+    @Schema(
+            description = "The Captcha question",
             name = "captchaQuestion",
-            dataType = "String",
+            type = "string",
             example = ""
     )
     private String captchaQuestion;

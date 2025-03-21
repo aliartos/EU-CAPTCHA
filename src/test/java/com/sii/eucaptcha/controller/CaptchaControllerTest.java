@@ -1,143 +1,138 @@
 package com.sii.eucaptcha.controller;
 
+import com.sii.eucaptcha.controller.constants.CaptchaConstants;
+import com.sii.eucaptcha.controller.dto.captchaquery.CaptchaQueryDto;
+import com.sii.eucaptcha.controller.dto.captcharesult.CaptchaResultDto;
+import com.sii.eucaptcha.controller.dto.captcharesult.TextualCaptchaResultDtoDto;
+import com.sii.eucaptcha.service.CaptchaService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.Locale;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-@WebMvcTest(CaptchaController.class)
+@ActiveProfiles("test")
 public class CaptchaControllerTest {
-/*
-    @Autowired
-    private MockMvc mvc;
+
+    private MockMvc mockMvc;
 
     @Mock
     private CaptchaService captchaService;
 
+    @InjectMocks
+    private CaptchaController captchaController;
 
-    @Before
-    public void init(){
-
-        String[] resultGeneratedCaptcah = new String[0];
-        resultGeneratedCaptcah[0] = "captchaId " ;
-        resultGeneratedCaptcah[1] = "Image" ;
-        when(this.captchaService.generateCaptchaImage(any(), any())).thenReturn(resultGeneratedCaptcah);
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders.standaloneSetup(captchaController).build();
     }
 
-    @DisplayName("Test geting Captcha ")
+    @DisplayName("Test getting Captcha")
     @Test
-    public void getCaptcha() throws Exception {
+    public void testGetCaptcha() throws Exception {
+        // Arrange
+        TextualCaptchaResultDtoDto captchaResult = new TextualCaptchaResultDtoDto();
+        captchaResult.setCaptchaId("testCaptchaId");
+        captchaResult.setCaptchaImg("testCaptchaImage");
+        captchaResult.setAudioCaptcha("testAudioCaptcha");
+        captchaResult.setCaptchaType(CaptchaConstants.STANDARD);
 
-        this.mvc.perform( MockMvcRequestBuilders
+        when(captchaService.generateCaptchaWrapper(any(CaptchaQueryDto.class))).thenReturn(captchaResult);
+
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/captchaImg")
-                .accept(MediaType.ALL_VALUE))
+                .param("locale", "en")
+                .param("captchaType", CaptchaConstants.STANDARD)
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk());
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.captchaId").value("testCaptchaId"))
+                .andExpect(jsonPath("$.captchaImg").value("testCaptchaImage"))
+                .andExpect(jsonPath("$.audioCaptcha").value("testAudioCaptcha"))
+                .andExpect(jsonPath("$.captchaType").value(CaptchaConstants.STANDARD));
     }
 
-    @DisplayName("Test reloading Captcha ")
+    @DisplayName("Test reloading Captcha")
     @Test
-    public void reloadCaptchaImage() throws Exception {
+    public void testReloadCaptcha() throws Exception {
+        // Arrange
+        String previousCaptchaId = "previousCaptchaId";
+        TextualCaptchaResultDtoDto captchaResult = new TextualCaptchaResultDtoDto();
+        captchaResult.setCaptchaId("newCaptchaId");
+        captchaResult.setCaptchaImg("newCaptchaImage");
+        captchaResult.setAudioCaptcha("newAudioCaptcha");
+        captchaResult.setCaptchaType(CaptchaConstants.STANDARD);
 
-        this.mvc.perform( MockMvcRequestBuilders
-                .get("/api/reloadCaptchaImg/{previousCaptchaId}" , "jjq7u4reu1vaiuao28gjq4vkq4")
-                .accept(MediaType.ALL_VALUE))
+        when(captchaService.generateCaptchaWrapper(any(CaptchaQueryDto.class))).thenReturn(captchaResult);
+
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/reloadCaptchaImg/{previousCaptchaId}", previousCaptchaId)
+                .param("locale", "en")
+                .param("captchaType", CaptchaConstants.STANDARD)
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk());
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.captchaId").value("newCaptchaId"))
+                .andExpect(jsonPath("$.captchaImg").value("newCaptchaImage"))
+                .andExpect(jsonPath("$.audioCaptcha").value("newAudioCaptcha"))
+                .andExpect(jsonPath("$.captchaType").value(CaptchaConstants.STANDARD));
     }
 
-    @DisplayName("Test reloading Captcha without previous CaptchaID ")
+    @DisplayName("Test validating Captcha with valid answer")
     @Test
-    public void reloadCaptchaImage_without_previous_CaptchaID() throws Exception {
+    public void testValidateCaptchaWithValidAnswer() throws Exception {
+        // Arrange
+        String captchaId = "validCaptchaId";
+        String captchaAnswer = "correctAnswer";
 
-        this.mvc.perform( MockMvcRequestBuilders
-                .get("/api/reloadCaptchaImg/" )
-                .accept(MediaType.ALL_VALUE))
+        when(captchaService.validateCaptcha(anyString(), eq(captchaId), eq(captchaAnswer), anyString(), anyBoolean())).thenReturn(true);
+
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/validateCaptcha/{captchaId}", captchaId)
+                .param("captchaAnswer", captchaAnswer)
+                .param("captchaType", CaptchaConstants.STANDARD)
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
     }
 
-    @DisplayName("Test reloading Captcha with invalid previous CaptchaID ")
+    @DisplayName("Test validating Captcha with invalid answer")
     @Test
-    public void reloadCaptchaImage_with_Invalid_previous_capthcaId() throws Exception {
+    public void testValidateCaptchaWithInvalidAnswer() throws Exception {
+        // Arrange
+        String captchaId = "validCaptchaId";
+        String captchaAnswer = "wrongAnswer";
 
-        String previousCaptchaId = "l1qgsp6";
-        this.mvc.perform( MockMvcRequestBuilders
-                .get("/api/reloadCaptchaImg/{previousCaptchaId}" , previousCaptchaId)
-                .accept(MediaType.ALL_VALUE))
+        when(captchaService.validateCaptcha(anyString(), eq(captchaId), eq(captchaAnswer), anyString(), anyBoolean())).thenReturn(false);
+
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/validateCaptcha/{captchaId}", captchaId)
+                .param("captchaAnswer", captchaAnswer)
+                .param("captchaType", CaptchaConstants.STANDARD)
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest());
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(false));
     }
-
-    @DisplayName("Test validating Captcha with get function instead of post ")
-    @Test
-    public void validate_Captcha_with_get_function_and_not_post() throws Exception {
-
-        String CaptchaId = "l1qgsp6";
-        this.mvc.perform( MockMvcRequestBuilders
-                .get("/api/validateCaptcha/{previousCaptchaId}" , CaptchaId)
-                .accept(MediaType.ALL_VALUE))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isMethodNotAllowed());
-    }
-
-    @DisplayName("Test validating Captcha with get null answer ")
-    @Test
-    public void validate_Captcha_with_answer_null() throws Exception {
-
-        String CaptchaId = "l1qgsp6";
-        this.mvc.perform( MockMvcRequestBuilders
-                .post("/api/validateCaptcha/{previousCaptchaId}" , CaptchaId)
-                .accept(MediaType.ALL_VALUE))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isNotAcceptable());
-    }
-
-    @DisplayName("Test validating Captcha with valid answer and invalid CaptchaID")
-    @Test
-    public void validate_Captcha_with_valid_answer_and_invalid_CaptchaID() throws Exception {
-
-        String CaptchaId = "l1qgsp6";
-        String answerCaptcha = "LKH1D25D";
-        this.mvc.perform( MockMvcRequestBuilders
-                .post("/api/validateCaptcha/{previousCaptchaId}" , CaptchaId)
-                .param("captchaAnswer", answerCaptcha)
-                .accept(MediaType.ALL_VALUE))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @DisplayName("Test validating Captcha with invalid answer and valid CaptchaID")
-    @Test
-    public void validate_Captcha_with_invalid_answer_and_valid_CaptchaID() throws Exception {
-
-        String CaptchaId = "5m8v8tupqd0hqkjj1nrl1qgsp6";
-        String answerCaptcha = "LKH1";
-        this.mvc.perform( MockMvcRequestBuilders
-                .post("/api/validateCaptcha/{previousCaptchaId}" , CaptchaId)
-                .param("captchaAnswer", answerCaptcha)
-                .accept(MediaType.ALL_VALUE))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isNotAcceptable());
-
-    }
-
-    @DisplayName("Test validating Captcha with valid answer and valid CaptchaID")
-    @Test
-    public void validate_Captcha_with_valid_answer_and_valid_CaptchaID() throws Exception {
-
-        String CaptchaId = "5m8v8tupqd0hqkjj1nrl1qgsp6";
-        String answerCaptcha = "LKH14521";
-        this.mvc.perform( MockMvcRequestBuilders
-                .post("/api/validateCaptcha/{previousCaptchaId}" , CaptchaId)
-                .param("captchaAnswer", answerCaptcha)
-                .accept(MediaType.ALL_VALUE))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk());
-    }
-
-*/
 }

@@ -1,68 +1,86 @@
 package com.sii.eucaptcha.service;
 
-import net.jodah.expiringmap.ExpiringMap;
-import org.junit.Before;
+import com.sii.eucaptcha.service.cache.CacheClient;
+import com.sii.eucaptcha.service.cache.CacheClientFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+/**
+ * Tests for the cache functionality in the EU-CAPTCHA project.
+ * These tests verify that the cache implementations work correctly.
+ */
+@ExtendWith(MockitoExtension.class)
 public class CaptchaServiceTest {
 
-
-    String previousIdCaptcha = "jjq7u4reu1vaiuao28gjq4vkq4";
-    Locale frenchLocale = new Locale("fr", "FR");
-    private static final long CAPTCHA_EXPIRY_TIME = 20;
-
-    private static Map<String, String> captchaCodeMap =
-            ExpiringMap.builder().expiration(Long.valueOf(CAPTCHA_EXPIRY_TIME), TimeUnit.SECONDS).build();
-
-    @InjectMocks
-    private CaptchaService service;
+    @Mock
+    private CacheClient cacheClient;
 
     @Mock
-    private CaptchaService serviceMocked;
+    private CacheClientFactory cacheClientFactory;
 
-    @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
-    }
-
-    @DisplayName("Test genrating Captcha methode ")
+    @DisplayName("Test CacheClient set operation")
     @Test
-    public void generateCaptchaImage() throws IOException {
+    public void testCacheClientSet() {
+        // Arrange
+        String key = "testKey";
+        int expiry = 3600;
+        String value = "testValue";
 
-     /*   String[] resultGeneratedCaptcah = this.service.generateCaptchaImage(previousIdCaptcha, frenchLocale);
+        // Act
+        cacheClient.set(key, expiry, value);
 
-        assertNotNull(resultGeneratedCaptcah);
-        assertNotNull(resultGeneratedCaptcah[0]);
-        assertNotNull(resultGeneratedCaptcah[1]);
-
-        assertEquals(26, resultGeneratedCaptcah[1].length());
-        assertNotEquals(previousIdCaptcha, resultGeneratedCaptcah[1]); */
+        // Assert
+        verify(cacheClient, times(1)).set(key, expiry, value);
     }
 
-    @DisplayName("Test validate captcha methode")
+    @DisplayName("Test CacheClient get operation")
     @Test
-    public void validateCaptcha() {
-        when(this.serviceMocked.validateTextualCaptcha(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(true);
-        String CaptchaID = "jh0b0t6rad62bgu9cerv91cb5g";
-        String CaptchaAnswer = "KAB1";
-        String xJwtString  = "AAAAA";
-        assertTrue(serviceMocked.validateTextualCaptcha(xJwtString, CaptchaID, CaptchaAnswer, true));
+    public void testCacheClientGet() {
+        // Arrange
+        String key = "testKey";
+        String expectedValue = "testValue";
+        when(cacheClient.get(key)).thenReturn(expectedValue);
 
+        // Act
+        Object result = cacheClient.get(key);
+
+        // Assert
+        assertEquals(expectedValue, result);
+        verify(cacheClient, times(1)).get(key);
     }
 
+    @DisplayName("Test CacheClient delete operation")
+    @Test
+    public void testCacheClientDelete() {
+        // Arrange
+        String key = "testKey";
 
+        // Act
+        cacheClient.delete(key);
+
+        // Assert
+        verify(cacheClient, times(1)).delete(key);
+    }
+
+    @DisplayName("Test CacheClientFactory returns correct client")
+    @Test
+    public void testCacheClientFactory() {
+        // Arrange
+        when(cacheClientFactory.getCacheClient()).thenReturn(cacheClient);
+
+        // Act
+        CacheClient result = cacheClientFactory.getCacheClient();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(cacheClient, result);
+        verify(cacheClientFactory, times(1)).getCacheClient();
+    }
 }

@@ -6,9 +6,9 @@ import com.sii.eucaptcha.controller.constants.CaptchaConstants;
 import com.sii.eucaptcha.controller.dto.captchaquery.CaptchaQueryDto;
 import com.sii.eucaptcha.controller.dto.captcharesult.CaptchaResultDto;
 import com.sii.eucaptcha.service.CaptchaService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -42,12 +42,12 @@ public class CaptchaController {
      * @return response as String contains CaptchaID and Captcha Image
      */
     @CrossOrigin
-    @ApiOperation(value = "Get a Captcha image",
-            notes = "Returns a captcha image as per locale, captchaLength, type and capitalization or not")
+    @Operation(summary = "Get a Captcha image",
+            description = "Returns a captcha image as per locale, captchaLength, type and capitalization or not")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieved captcha image"),
-            @ApiResponse(code = 406, message = "Not Acceptable - Locale is missing or invalid"),
-            @ApiResponse(code = 400, message = "Token is missing")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved captcha image"),
+            @ApiResponse(responseCode = "406", description = "Not Acceptable - Locale is missing or invalid"),
+            @ApiResponse(responseCode = "400", description = "Token is missing")
     })
     @GetMapping(value = "/captchaImg")
     public CaptchaResultDto getCaptchaImage(@RequestParam(defaultValue = "en-GB", required = false) String locale,
@@ -88,13 +88,13 @@ public class CaptchaController {
      * @return response as String contains CaptchaID and Captcha Image
      */
     @CrossOrigin
-    @ApiOperation(value = "Refresh a previous Captcha image",
-            notes = "Returns a new captcha image as per locale, captchaLength, type and capitalization or not")
+    @Operation(summary = "Refresh a previous Captcha image",
+            description = "Returns a new captcha image as per locale, captchaLength, type and capitalization or not")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieved captcha image"),
-            @ApiResponse(code = 400, message = "CaptchaId is missing"),
-            @ApiResponse(code = 400, message = "Token is missing"),
-            @ApiResponse(code = 406, message = "Not Acceptable - Locale is missing or invalid")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved captcha image"),
+            @ApiResponse(responseCode = "400", description = "CaptchaId is missing"),
+            @ApiResponse(responseCode = "400", description = "Token is missing"),
+            @ApiResponse(responseCode = "406", description = "Not Acceptable - Locale is missing or invalid")
     })
     @GetMapping(value = "/reloadCaptchaImg/{previousCaptchaId}")
     public CaptchaResultDto reloadCaptchaImage(@PathVariable("previousCaptchaId") String previousCaptchaId,
@@ -142,12 +142,12 @@ public class CaptchaController {
      * @return fail or success as String response
      */
     @CrossOrigin
-    @ApiOperation(value = "Validate a Captcha image",
-            notes = "Returns success or failed as an answer")
+    @Operation(summary = "Validate a Captcha image",
+            description = "Returns success or failed as an answer")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfull response can be success or fail"),
-            @ApiResponse(code = 400, message = "CaptchaId is missing"),
-            @ApiResponse(code = 400, message = "Token is missing")
+            @ApiResponse(responseCode = "200", description = "Successfull response can be success or fail"),
+            @ApiResponse(responseCode = "400", description = "CaptchaId is missing"),
+            @ApiResponse(responseCode = "400", description = "Token is missing")
     })
     @PostMapping(value = "/validateCaptcha/{captchaId}")
     public ResponseEntity<String> validateCaptcha(@PathVariable(value = "captchaId", required = false) String captchaId,
