@@ -28,11 +28,8 @@ import com.sii.eucaptcha.service.sliding.CaptchaSlidingQuestionService;
 import com.sii.eucaptcha.service.whatsup.CaptchaWhatsUpImagesService;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.expiringmap.ExpiringMap;
-import net.spy.memcached.AddrUtil;
-import net.spy.memcached.ClientMode;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.config.NodeEndPoint;
+import com.sii.eucaptcha.service.cache.CacheClient;
+import com.sii.eucaptcha.service.cache.CacheClientFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -40,8 +37,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioSystem;
 import java.awt.*;
@@ -52,7 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -122,45 +117,22 @@ public class CaptchaService {
 
     private ResourceLoader resourceLoader;
 
-    private MemcachedClient client;
+    private CacheClient cacheClient;
 
     private int counter;
 
     public CaptchaService(CaptchaWhatsUpImagesService captchaWhatsUpImagesService,
                           CaptchaSlidingQuestionService captchaSlidingQuestionService, SoundConfigProperties props,
-                          ResourceLoader resourceLoader, CaptchaUsers captchaUsers) {
+                          ResourceLoader resourceLoader, CaptchaUsers captchaUsers, CacheClientFactory cacheClientFactory) {
         this.captchaWhatsUpImagesService = captchaWhatsUpImagesService;
         this.captchaSlidingQuestionService = captchaSlidingQuestionService;
         this.props = props;
         this.resourceLoader = resourceLoader;
-        initCacheClient();
+        this.cacheClient = cacheClientFactory.getCacheClient();
         this.captchaUsers = captchaUsers;
     }
 
-    public void initCacheClient() {
-        try {
-            ConnectionFactoryBuilder connectionFactoryBuilder = new ConnectionFactoryBuilder();
-            // Build SSLContext
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init((KeyStore) null);
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, tmf.getTrustManagers(), null);
-            // Create the client in TLS mode
-            connectionFactoryBuilder.setSSLContext(sslContext);
-            connectionFactoryBuilder.setClientMode(ClientMode.Dynamic);
-            // TLS mode enables hostname verification by default. It is always recommended to do that.
-            connectionFactoryBuilder.setHostnameForTlsVerification("AWS hostname");
-            client = new MemcachedClient(
-                    connectionFactoryBuilder.build(), AddrUtil.getAddresses("AWS host and port"));
-            Collection<NodeEndPoint> endpoints = client.getAllNodeEndPoints();
-            for (NodeEndPoint endPoint : endpoints) {
-                log.info("Available endpoint {} with port {}", endPoint.getHostName(), endPoint.getPort());
-                log.info("Connection is active {}", client.isConfigurationInitialized());
-            }
-        } catch (IOException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    // The cache client is now initialized by the CacheClientFactory
 
     /**
      * Generate Captcha  Image Wrapper
@@ -493,7 +465,7 @@ public class CaptchaService {
 
     private void addCaptcha(String xJwtString, String captchaId, String captchaAnswer) {
         log.info("Inside Add Captcha method");
-        client.set(captchaId, 3600, captchaAnswer);
+        cacheClient.set(captchaId, 3600, captchaAnswer);
         String userValue = captchaUsers.getUserValue(xJwtString);
         log.info(userValue);
         updateCounter(userValue, "GET");
@@ -504,7 +476,7 @@ public class CaptchaService {
     private String getCaptcha(String xJwtString, String captchaId) {
         String answer;
         log.debug("Inside getCaptcha method with captchaId {}", captchaId);
-        answer = (String) client.get(captchaId);
+        answer = (String) cacheClient.get(captchaId);
         updateCounter(captchaUsers.getUserValue(xJwtString), "VALIDATE");
         log.info("Found captchaId {} in the cache with answer {}", captchaId, answer);
         captchaCodeMap.get(captchaId);
@@ -517,7 +489,7 @@ public class CaptchaService {
      * @param captchaId the ID of the Captcha
      */
     private void removeCaptcha(String captchaId) {
-        client.delete(captchaId);
+        cacheClient.delete(captchaId);
         log.info("Removed captchaId {} from cache", captchaId);
         captchaCodeMap.remove(captchaId);
     }
@@ -543,18 +515,18 @@ public class CaptchaService {
     private void updateCounter(String userValue, String method) {
         log.info("Uservalue: {}, method: {}", userValue, method);
         if(method.equalsIgnoreCase("GET")) {
-            Integer counter = (Integer) client.get(userValue + "getCounter");
+            Integer counter = (Integer) cacheClient.get(userValue + "getCounter");
             if(counter == null) {
-                client.set(userValue + "getCounter", 90000, 1);
+                cacheClient.set(userValue + "getCounter", 90000, 1);
             } else {
-                client.set(userValue + "getCounter", 90000, ++counter);
+                cacheClient.set(userValue + "getCounter", 90000, ++counter);
             }
         } else {
-            Integer counter = (Integer) client.get(userValue + "validateCounter");
+            Integer counter = (Integer) cacheClient.get(userValue + "validateCounter");
             if(counter == null) {
-                client.set(userValue + "validateCounter", 90000, 1);
+                cacheClient.set(userValue + "validateCounter", 90000, 1);
             } else {
-                client.set(userValue + "validateCounter", 90000, ++counter);
+                cacheClient.set(userValue + "validateCounter", 90000, ++counter);
             }
         }
     }
@@ -570,13 +542,10 @@ public class CaptchaService {
     }
 
     public Integer getUserCount(String userValue, String method) {
-        if(client == null) {
-            initCacheClient();
-        }
         if(method.equalsIgnoreCase("GET")) {
-            return (Integer) client.get(userValue + "getCounter");
+            return (Integer) cacheClient.get(userValue + "getCounter");
         } else {
-            return (Integer) client.get(userValue + "validateCounter");
+            return (Integer) cacheClient.get(userValue + "validateCounter");
         }
     }
 
