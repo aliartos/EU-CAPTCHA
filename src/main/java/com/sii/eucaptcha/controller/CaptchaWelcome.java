@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @version 1.0
  * Get the captcha welcome page .
  */
-@Controller
+//@Controller
 public class CaptchaWelcome {
 
     @Value("${controller.captcha.welcome}")

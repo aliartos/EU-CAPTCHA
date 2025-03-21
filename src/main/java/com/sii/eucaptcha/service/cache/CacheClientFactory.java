@@ -17,6 +17,9 @@ public class CacheClientFactory {
     @Value("${cache.type:memcached}")
     private String cacheType;
 
+    @Value("${aws.enabled:false}")
+    private boolean awsEnabled;
+
     private final MemcachedCacheClient memcachedCacheClient;
     private final RedisCacheClient redisCacheClient;
 
@@ -30,12 +33,16 @@ public class CacheClientFactory {
 
     @PostConstruct
     public void init() {
-        if ("redis".equalsIgnoreCase(cacheType)) {
-            log.info("Using Redis cache client");
-            cacheClient = redisCacheClient;
-        } else {
-            log.info("Using Memcached cache client");
+        if (awsEnabled && "memcached".equalsIgnoreCase(cacheType)) {
+            log.info("AWS integration enabled and cache type is memcached. Using Memcached cache client.");
             cacheClient = memcachedCacheClient;
+        } else {
+            if ("memcached".equalsIgnoreCase(cacheType)) {
+                log.info("AWS integration disabled but cache type is memcached. Falling back to Redis cache client.");
+            } else {
+                log.info("Using Redis cache client");
+            }
+            cacheClient = redisCacheClient;
         }
 
         cacheClient.init();

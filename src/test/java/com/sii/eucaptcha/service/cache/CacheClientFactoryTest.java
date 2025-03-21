@@ -31,9 +31,10 @@ public class CacheClientFactoryTest {
     }
 
     @Test
-    public void testInitWithMemcached() {
+    public void testInitWithMemcachedAndAwsEnabled() {
         // Arrange
         ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "memcached");
+        ReflectionTestUtils.setField(cacheClientFactory, "awsEnabled", true);
 
         // Act
         cacheClientFactory.init();
@@ -45,6 +46,24 @@ public class CacheClientFactoryTest {
         verify(memcachedCacheClient, times(1)).init();
         verify(memcachedCacheClient, times(1)).isInitialized();
         verify(redisCacheClient, never()).init();
+    }
+
+    @Test
+    public void testInitWithMemcachedButAwsDisabled() {
+        // Arrange
+        ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "memcached");
+        ReflectionTestUtils.setField(cacheClientFactory, "awsEnabled", false);
+
+        // Act
+        cacheClientFactory.init();
+        CacheClient result = cacheClientFactory.getCacheClient();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(redisCacheClient, result);
+        verify(redisCacheClient, times(1)).init();
+        verify(redisCacheClient, times(1)).isInitialized();
+        verify(memcachedCacheClient, never()).init();
     }
 
     @Test
@@ -68,6 +87,7 @@ public class CacheClientFactoryTest {
     public void testInitWithUnknownType() {
         // Arrange
         ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "unknown");
+        ReflectionTestUtils.setField(cacheClientFactory, "awsEnabled", false); // Default is false
 
         // Act
         cacheClientFactory.init();
@@ -75,16 +95,35 @@ public class CacheClientFactoryTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(memcachedCacheClient, result); // Default to memcached
-        verify(memcachedCacheClient, times(1)).init();
-        verify(memcachedCacheClient, times(1)).isInitialized();
-        verify(redisCacheClient, never()).init();
+        assertEquals(redisCacheClient, result); // Default to Redis when AWS is disabled
+        verify(redisCacheClient, times(1)).init();
+        verify(redisCacheClient, times(1)).isInitialized();
+        verify(memcachedCacheClient, never()).init();
     }
 
     @Test
-    public void testInitWithClientNotInitialized() {
+    public void testInitWithUnknownTypeAndAwsEnabled() {
+        // Arrange
+        ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "unknown");
+        ReflectionTestUtils.setField(cacheClientFactory, "awsEnabled", true);
+
+        // Act
+        cacheClientFactory.init();
+        CacheClient result = cacheClientFactory.getCacheClient();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(redisCacheClient, result); // Still use Redis for unknown types
+        verify(redisCacheClient, times(1)).init();
+        verify(redisCacheClient, times(1)).isInitialized();
+        verify(memcachedCacheClient, never()).init();
+    }
+
+    @Test
+    public void testInitWithMemcachedClientNotInitialized() {
         // Arrange
         ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "memcached");
+        ReflectionTestUtils.setField(cacheClientFactory, "awsEnabled", true);
         when(memcachedCacheClient.isInitialized()).thenReturn(false);
 
         // Act & Assert
@@ -95,5 +134,21 @@ public class CacheClientFactoryTest {
         assertEquals("Failed to initialize cache client", exception.getMessage());
         verify(memcachedCacheClient, times(1)).init();
         verify(memcachedCacheClient, times(1)).isInitialized();
+    }
+
+    @Test
+    public void testInitWithRedisClientNotInitialized() {
+        // Arrange
+        ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "redis");
+        when(redisCacheClient.isInitialized()).thenReturn(false);
+
+        // Act & Assert
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            cacheClientFactory.init();
+        });
+
+        assertEquals("Failed to initialize cache client", exception.getMessage());
+        verify(redisCacheClient, times(1)).init();
+        verify(redisCacheClient, times(1)).isInitialized();
     }
 }

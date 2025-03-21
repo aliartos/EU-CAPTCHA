@@ -20,13 +20,13 @@ import java.util.concurrent.TimeUnit;
 public class RedisCacheClient implements CacheClient {
 
     private RedisTemplate<String, Object> redisTemplate;
-    
+
     @Value("${cache.redis.host:localhost}")
     private String redisHost;
-    
+
     @Value("${cache.redis.port:6379}")
     private int redisPort;
-    
+
     @Value("${cache.redis.password:}")
     private String redisPassword;
 
@@ -36,18 +36,20 @@ public class RedisCacheClient implements CacheClient {
             RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
             configuration.setHostName(redisHost);
             configuration.setPort(redisPort);
-            
+
             if (redisPassword != null && !redisPassword.isEmpty()) {
                 configuration.setPassword(redisPassword);
             }
-            
-            RedisConnectionFactory connectionFactory = new JedisConnectionFactory(configuration);
-            
+
+            JedisConnectionFactory connectionFactory = new JedisConnectionFactory(configuration);
+            connectionFactory.afterPropertiesSet();
+            connectionFactory.start();
+
             redisTemplate = new RedisTemplate<>();
             redisTemplate.setConnectionFactory(connectionFactory);
             redisTemplate.setKeySerializer(new StringRedisSerializer());
             redisTemplate.afterPropertiesSet();
-            
+
             log.info("Redis client initialized with host: {}, port: {}", redisHost, redisPort);
         } catch (Exception e) {
             log.error("Failed to initialize Redis client", e);

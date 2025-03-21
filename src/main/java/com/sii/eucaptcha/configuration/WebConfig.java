@@ -109,6 +109,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(props.getCssLocations());
         registry.addResourceHandler(props.getJsHandler())
                 .addResourceLocations(props.getJsLocations());
+        // Add resource handler for static HTML files
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/");
     }
 
     @Override

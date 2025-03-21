@@ -33,7 +33,7 @@ import java.util.Date;
 @Service
 @Slf4j
 @Profile("!test")
-@ConditionalOnProperty(name = "aws.s3.enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = {"aws.enabled", "aws.s3.enabled"}, havingValue = "true", matchIfMissing = false)
 public class ScheduledTasks {
 
     private final ResourceLoader resourceLoader;

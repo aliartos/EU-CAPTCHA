@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,9 @@ public class CaptchaController {
 
     private final CaptchaService captchaService;
     private final CaptchaUsers captchaUsers;
+
+    @Value("${aws.enabled:false}")
+    private boolean awsEnabled;
 
     public CaptchaController(CaptchaService captchaService, CaptchaUsers captchaUsers) {
         this.captchaService = captchaService;
@@ -64,8 +68,8 @@ public class CaptchaController {
             log.debug("Locale is missing or invalid!");
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Locale is missing or invalid!");
         }
-        if (StringUtils.isBlank(xJwtString) || captchaUsers.isNoValidUser(xJwtString)) {
-            log.debug("Token is missing or invalid!");
+        if (StringUtils.isBlank(xJwtString) || (awsEnabled && captchaUsers.isNoValidUser(xJwtString))) {
+            log.debug("Token is missing or invalid! AWS enabled: {}", awsEnabled);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing or invalid!");
         }
 
@@ -112,8 +116,8 @@ public class CaptchaController {
             log.debug("Locale is missing or invalid!");
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Locale is missing or invalid!");
         }
-        if (StringUtils.isBlank(xJwtString) || captchaUsers.isNoValidUser(xJwtString)) {
-            log.debug("Token is missing or invalid!");
+        if (StringUtils.isBlank(xJwtString) || (awsEnabled && captchaUsers.isNoValidUser(xJwtString))) {
+            log.debug("Token is missing or invalid! AWS enabled: {}", awsEnabled);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is missing or invalid!");
         }
 
@@ -163,8 +167,8 @@ public class CaptchaController {
         if (StringUtils.isBlank(captchaId)) {
             log.error("CaptchaId is missing!");
             return new ResponseEntity<>("CaptchaId is missing!", HttpStatus.BAD_REQUEST);
-        } else if (StringUtils.isBlank(xJwtString) || captchaUsers.isNoValidUser(xJwtString)) {
-            log.error("Token is missing or invalid!");
+        } else if (StringUtils.isBlank(xJwtString) || (awsEnabled && captchaUsers.isNoValidUser(xJwtString))) {
+            log.error("Token is missing or invalid! AWS enabled: {}", awsEnabled);
             return new ResponseEntity<>("Token is missing or invalid!", HttpStatus.BAD_REQUEST);
         } else {
             //Verify the validity of the captcha answer.
