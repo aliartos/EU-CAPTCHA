@@ -11,3 +11,6 @@
 /.gradle/vcs-1/gc.properties
 /.gradle/6.7/fileChanges/last-build.bin
 /logs/
+
+**/target
+.obsidian
