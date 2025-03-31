@@ -127,6 +127,63 @@
         .tab-content.active {
             display: block;
         }
+        .slider-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .slider {
+            width: 100%;
+            margin: 15px 0;
+            -webkit-appearance: none;
+            height: 15px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+        .slider-value {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #rotation-captcha-image {
+            max-width: 250px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+        #rotation-success-message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        #rotation-error-message {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        button#rotation-reload-button {
+            background-color: #f0ad4e;
+            color: white;
+        }
+        button#rotation-submit-button {
+            background-color: #5cb85c;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -206,7 +263,62 @@
         </div>
         
         <div id="rotate-tab" class="tab-content">
-            <p>The rotation CAPTCHA functionality will be implemented in a future update.</p>
+            <p>This demo showcases the EU CAPTCHA rotation ("What's Up") feature.</p>
+            
+            <div class="form-group">
+                <label for="rotation-language-select">Select Language:</label>
+                <select id="rotation-language-select">
+                    <option value="en-GB">English</option>
+                    <option value="fr-FR">Français</option>
+                    <option value="de-DE">Deutsch</option>
+                    <option value="bg-BG">български</option>
+                    <option value="hr-HR">Hrvatski</option>
+                    <option value="da-DK">Dansk</option>
+                    <option value="es-ES">Español</option>
+                    <option value="et-EE">Eesti keel</option>
+                    <option value="fi-FI">Suomi</option>
+                    <option value="el-GR">ελληνικά</option>
+                    <option value="hu-HU">Magyar</option>
+                    <option value="it-IT">Italiano</option>
+                    <option value="lv-LV">Latviešu valoda</option>
+                    <option value="lt-LT">Lietuvių kalba</option>
+                    <option value="mt-MT">Malti</option>
+                    <option value="nl-NL">Nederlands</option>
+                    <option value="pl-PL">Polski</option>
+                    <option value="pt-PT">Português</option>
+                    <option value="ro-RO">Română</option>
+                    <option value="sk-SK">Slovenčina</option>
+                    <option value="sl-SI">Slovenščina</option>
+                    <option value="sv-SE">Svenska</option>
+                    <option value="cs-CZ">čeština</option>
+                    <option value="ga-IE">Gaeilge</option>
+                </select>
+            </div>
+            
+            <div class="captcha-container">
+                <div class="captcha-image-container">
+                    <img id="rotation-captcha-image" alt="Rotation CAPTCHA Image" src="" captchaId="">
+                </div>
+                
+                <div class="slider-container">
+                    <label for="rotation-slider">Rotate the image to upright position:</label>
+                    <input type="range" id="rotation-slider" min="-180" max="180" value="0" step="15" class="slider">
+                    <div class="slider-value">Current rotation: <span id="rotation-value">0</span>°</div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="rotation-reload-button">Reload CAPTCHA</button>
+                    <button id="rotation-submit-button">Submit</button>
+                </div>
+                
+                <div id="rotation-success-message" class="message">
+                    CAPTCHA validation successful!
+                </div>
+                
+                <div id="rotation-error-message" class="message">
+                    CAPTCHA validation failed. Please try again.
+                </div>
+            </div>
         </div>
     </div>
     
