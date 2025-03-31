@@ -22,18 +22,23 @@ public class CacheClientFactory {
 
     private final MemcachedCacheClient memcachedCacheClient;
     private final RedisCacheClient redisCacheClient;
+    private final InMemoryCacheClient inMemoryCacheClient;
 
     private CacheClient cacheClient;
 
     @Autowired
-    public CacheClientFactory(MemcachedCacheClient memcachedCacheClient, RedisCacheClient redisCacheClient) {
+    public CacheClientFactory(MemcachedCacheClient memcachedCacheClient, RedisCacheClient redisCacheClient, InMemoryCacheClient inMemoryCacheClient) {
         this.memcachedCacheClient = memcachedCacheClient;
         this.redisCacheClient = redisCacheClient;
+        this.inMemoryCacheClient = inMemoryCacheClient;
     }
 
     @PostConstruct
     public void init() {
-        if (awsEnabled && "memcached".equalsIgnoreCase(cacheType)) {
+        if ("memory".equalsIgnoreCase(cacheType)) {
+            log.info("Using in-memory cache implementation.");
+            cacheClient = inMemoryCacheClient;
+        } else if (awsEnabled && "memcached".equalsIgnoreCase(cacheType)) {
             log.info("AWS integration enabled and cache type is memcached. Using Memcached cache client.");
             cacheClient = memcachedCacheClient;
         } else {

@@ -19,6 +19,9 @@ public class CacheClientFactoryTest {
 
     @Mock
     private RedisCacheClient redisCacheClient;
+    
+    @Mock
+    private InMemoryCacheClient inMemoryCacheClient;
 
     @InjectMocks
     private CacheClientFactory cacheClientFactory;
@@ -28,6 +31,7 @@ public class CacheClientFactoryTest {
         // Use lenient() to avoid UnnecessaryStubbingException
         lenient().when(memcachedCacheClient.isInitialized()).thenReturn(true);
         lenient().when(redisCacheClient.isInitialized()).thenReturn(true);
+        lenient().when(inMemoryCacheClient.isInitialized()).thenReturn(true);
     }
 
     @Test
@@ -46,6 +50,7 @@ public class CacheClientFactoryTest {
         verify(memcachedCacheClient, times(1)).init();
         verify(memcachedCacheClient, times(1)).isInitialized();
         verify(redisCacheClient, never()).init();
+        verify(inMemoryCacheClient, never()).init();
     }
 
     @Test
@@ -64,6 +69,7 @@ public class CacheClientFactoryTest {
         verify(redisCacheClient, times(1)).init();
         verify(redisCacheClient, times(1)).isInitialized();
         verify(memcachedCacheClient, never()).init();
+        verify(inMemoryCacheClient, never()).init();
     }
 
     @Test
@@ -80,6 +86,25 @@ public class CacheClientFactoryTest {
         assertEquals(redisCacheClient, result);
         verify(redisCacheClient, times(1)).init();
         verify(redisCacheClient, times(1)).isInitialized();
+        verify(memcachedCacheClient, never()).init();
+        verify(inMemoryCacheClient, never()).init();
+    }
+    
+    @Test
+    public void testInitWithMemory() {
+        // Arrange
+        ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "memory");
+
+        // Act
+        cacheClientFactory.init();
+        CacheClient result = cacheClientFactory.getCacheClient();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(inMemoryCacheClient, result);
+        verify(inMemoryCacheClient, times(1)).init();
+        verify(inMemoryCacheClient, times(1)).isInitialized();
+        verify(redisCacheClient, never()).init();
         verify(memcachedCacheClient, never()).init();
     }
 
@@ -99,6 +124,7 @@ public class CacheClientFactoryTest {
         verify(redisCacheClient, times(1)).init();
         verify(redisCacheClient, times(1)).isInitialized();
         verify(memcachedCacheClient, never()).init();
+        verify(inMemoryCacheClient, never()).init();
     }
 
     @Test
@@ -117,6 +143,7 @@ public class CacheClientFactoryTest {
         verify(redisCacheClient, times(1)).init();
         verify(redisCacheClient, times(1)).isInitialized();
         verify(memcachedCacheClient, never()).init();
+        verify(inMemoryCacheClient, never()).init();
     }
 
     @Test
@@ -150,5 +177,21 @@ public class CacheClientFactoryTest {
         assertEquals("Failed to initialize cache client", exception.getMessage());
         verify(redisCacheClient, times(1)).init();
         verify(redisCacheClient, times(1)).isInitialized();
+    }
+    
+    @Test
+    public void testInitWithInMemoryClientNotInitialized() {
+        // Arrange
+        ReflectionTestUtils.setField(cacheClientFactory, "cacheType", "memory");
+        when(inMemoryCacheClient.isInitialized()).thenReturn(false);
+
+        // Act & Assert
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            cacheClientFactory.init();
+        });
+
+        assertEquals("Failed to initialize cache client", exception.getMessage());
+        verify(inMemoryCacheClient, times(1)).init();
+        verify(inMemoryCacheClient, times(1)).isInitialized();
     }
 }
