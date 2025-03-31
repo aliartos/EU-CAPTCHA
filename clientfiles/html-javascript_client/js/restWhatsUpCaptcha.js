@@ -1,5 +1,6 @@
 let EuCaptchaToken;
 let degrees = 0 ;
+const hostname = "http://localhost:8080/";
 
 function getLastSelectedValue(){
     const language = sessionStorage.getItem("language");
@@ -21,7 +22,7 @@ function getLanguage(){
 function getWhatsUpcaptcha(){
     const getCaptchaUrl = $.ajax({
         type: "GET",
-        url: 'api/captchaImg?captchaType=WHATS_UP&locale='+ getLanguage(),
+        url: hostname + 'api/captchaImg?captchaType=WHATS_UP&locale='+ getLanguage(),
         xhrFields: {
             'withCredentials': true
         },
@@ -39,7 +40,7 @@ function getWhatsUpcaptcha(){
 function reloadCaptcha(){
     const reloadCaptchaUrl = $.ajax({
         type: "GET",
-        url: 'api/reloadCaptchaImg/' + $("#captchaImage").attr("captchaId")+ "?captchaType=WHATS_UP&locale="+ getLanguage(),
+        url: hostname +'api/reloadCaptchaImg/' + $("#captchaImage").attr("captchaId")+ "?captchaType=WHATS_UP&locale="+ getLanguage(),
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Accept", "application/json");
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -59,7 +60,7 @@ function validateCaptcha(){
     const validateCaptcha = $.ajax({
         type: "POST",
         contentType: 'application/json; charset=utf-8',
-        url: "api/validateCaptcha/" + $("#captchaImage").attr("captchaId"),
+        url: hostname +"api/validateCaptcha/" + $("#captchaImage").attr("captchaId"),
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Accept", "application/json");
             xhr.setRequestHeader("Content-Type", "application/json");

@@ -1,5 +1,6 @@
 let useAudio = false;
 let EuCaptchaToken;
+const hostname = "http://localhost:8080/";
 
 function onPlayAudio(){
     useAudio = true;
@@ -41,9 +42,10 @@ function getCaptchaLength(queryString){
     }
 }
 function getcaptcha(){
+
     const getCaptchaUrl = $.ajax({
         type: "GET",
-        url: 'api/captchaImg?locale='+ getLanguage() + '&captchaLength='+ getCaptchaLength(window.location.search) + '&capitalized=' + sessionStorage.getItem("capitalized"),
+        url: hostname + 'api/captchaImg?locale='+ getLanguage() + '&captchaLength='+ getCaptchaLength(window.location.search) + '&capitalized=' + sessionStorage.getItem("capitalized"),
         beforeSend: function (xhr) {
             xhr.withCredentials = true;
             xhr.crossDomain = true;
@@ -60,7 +62,7 @@ function getcaptcha(){
 function reloadCaptcha(){
     const reloadCaptchaUrl = $.ajax({
         type: "GET",
-        url: 'api/reloadCaptchaImg/' + $("#captchaImg").attr("captchaId") + '/?locale=' + sessionStorage.getItem("language") + '&captchaLength='+ getCaptchaLength(window.location.search) + '&capitalized='+ sessionStorage.getItem("capitalized"),
+        url: hostname + 'api/reloadCaptchaImg/' + $("#captchaImg").attr("captchaId") + '/?locale=' + sessionStorage.getItem("language") + '&captchaLength='+ getCaptchaLength(window.location.search) + '&capitalized='+ sessionStorage.getItem("capitalized"),
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Accept", "application/json");
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -82,7 +84,7 @@ function validateCaptcha(){
     const validateCaptcha = $.ajax({
         type: "POST",
         contentType: 'application/json; charset=utf-8',
-        url: "api/validateCaptcha/" + $("#captchaImg").attr("captchaId"),
+        url: hostname + "api/validateCaptcha/" + $("#captchaImg").attr("captchaId"),
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Accept", "application/json");
             xhr.setRequestHeader("Content-Type", "application/json");
