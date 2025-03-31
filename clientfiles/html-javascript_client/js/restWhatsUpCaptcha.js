@@ -1,6 +1,7 @@
-let EuCaptchaToken;
+// let EuCaptchaToken;
 let degrees = 0 ;
 const hostname = "http://localhost:8080/";
+let EuCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXh0dWFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.MJfBKb01QKVVafes5DoDDoRAVNios3H_nrWYWZZ30Vs";
 
 function getLastSelectedValue(){
     const language = sessionStorage.getItem("language");
@@ -27,6 +28,9 @@ function getWhatsUpcaptcha(){
             'withCredentials': true
         },
         crossDomain: true,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("xJwtString", EuCaptchaToken);
+        },
         success: function (data) {
             console.log(getLanguage())
             EuCaptchaToken = getCaptchaUrl.getResponseHeader("x-jwtString");

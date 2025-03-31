@@ -1,6 +1,8 @@
 let useAudio = false;
-let EuCaptchaToken;
+// let EuCaptchaToken;
 const hostname = "http://localhost:8080/";
+let EuCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXh0dWFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.MJfBKb01QKVVafes5DoDDoRAVNios3H_nrWYWZZ30Vs";
+
 
 function onPlayAudio(){
     useAudio = true;
@@ -49,6 +51,7 @@ function getcaptcha(){
         beforeSend: function (xhr) {
             xhr.withCredentials = true;
             xhr.crossDomain = true;
+            xhr.setRequestHeader("xJwtString", EuCaptchaToken);
         },
         success: function (data) {
             EuCaptchaToken = getCaptchaUrl.getResponseHeader("x-jwtString");

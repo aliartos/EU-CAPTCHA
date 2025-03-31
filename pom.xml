@@ -13,12 +13,43 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>EuCaptcha</name>
 	<description>EU Captcha</description>
-	<packaging>war</packaging>
+	<!-- Default packaging - will be overridden by active profile -->
+	<packaging>${packaging.type}</packaging>
 
 	<properties>
 		<java.version>21</java.version>
 		<start-class>com.sii.eucaptcha.EuCaptchaApplication</start-class>
+		<packaging.type>war</packaging.type>
 	</properties>
+
+	<!-- Profiles to control packaging type -->
+	<profiles>
+		<!-- Default profile - WAR packaging -->
+		<profile>
+			<id>war</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<packaging.type>war</packaging.type>
+			</properties>
+		</profile>
+		<!-- JAR packaging for standalone executable application -->
+		<profile>
+			<id>jar</id>
+			<properties>
+				<packaging.type>jar</packaging.type>
+			</properties>
+			<dependencies>
+				<!-- When building a JAR, include Tomcat as a runtime dependency -->
+				<dependency>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
@@ -195,8 +226,12 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<executions>
 					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
 						<configuration>
-							<mainClass>com.sii.eucaptcha.EuCaptchaApplication</mainClass>
+							<mainClass>${start-class}</mainClass>
+							<classifier>${packaging.type == 'jar' ? '' : 'exec'}</classifier>
 						</configuration>
 					</execution>
 				</executions>
