@@ -1,0 +1,5 @@
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-library/src/test/java/com/sii/eucaptcha/service/cache/CacheClientFactoryTest.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-library/src/test/java/com/sii/eucaptcha/service/ElastiCacheServiceTest.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-library/src/test/java/com/sii/eucaptcha/service/cache/RedisCacheClientTest.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-library/src/test/java/com/sii/eucaptcha/service/CaptchaServiceTest.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-library/src/test/java/com/sii/eucaptcha/service/cache/MemcachedCacheClientTest.java

@@ -1,0 +1,8 @@
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/EuCaptchaApplication.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/configuration/AppInitializer.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/configuration/OpenApiConfig.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/configuration/WebConfig.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/configuration/filter/HeaderFilterAdder.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/controller/CaptchaController.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/controller/CaptchaWelcome.java
+/media/kostas/D/projects/ESMA/EU-CAPTCHA/eucaptcha-application/src/main/java/com/sii/eucaptcha/controller/StaticWebController.java

@@ -1,0 +1,87 @@
+{
+  "groups": [
+    {
+      "name": "config.view",
+      "type": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "controller.captcha",
+      "type": "com.sii.eucaptcha.configuration.properties.ControllerConfigProperties",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ControllerConfigProperties"
+    },
+    {
+      "name": "sound.noises",
+      "type": "com.sii.eucaptcha.configuration.properties.SoundConfigProperties",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.SoundConfigProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "config.view.base-name",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.css-handler",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.css-locations",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.default-encoding",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.js-handler",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.js-locations",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.param-name",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.prefix",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "config.view.suffix",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.ApplicationConfigProperties"
+    },
+    {
+      "name": "sound.noises.default-noises",
+      "type": "java.lang.String[]",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.SoundConfigProperties"
+    },
+    {
+      "name": "sound.noises.noise-volume",
+      "type": "java.lang.Double",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.SoundConfigProperties"
+    },
+    {
+      "name": "sound.noises.sample-volume",
+      "type": "java.lang.Double",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.SoundConfigProperties"
+    },
+    {
+      "name": "sound.noises.silence-audio",
+      "type": "java.lang.String",
+      "sourceType": "com.sii.eucaptcha.configuration.properties.SoundConfigProperties"
+    }
+  ],
+  "hints": []
+}

@@ -1,0 +1,5 @@
+com/sii/eucaptcha/service/cache/CacheClientFactoryTest.class
+com/sii/eucaptcha/service/CaptchaServiceTest.class
+com/sii/eucaptcha/service/cache/RedisCacheClientTest.class
+com/sii/eucaptcha/service/ElastiCacheServiceTest.class
+com/sii/eucaptcha/service/cache/MemcachedCacheClientTest.class
