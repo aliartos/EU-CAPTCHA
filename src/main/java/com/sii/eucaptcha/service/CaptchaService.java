@@ -268,6 +268,8 @@ public class CaptchaService {
         String captchaId = this.handleCaptchaId(previousCaptchaId);
         //Adding the Captcha image , the captcha ID , the captcha audio file to the String []
         Resource resource = captchaWhatsUpImagesService.loadRandomImage();
+        log.info("Resource path: " + resource.getFilename());
+
         if (degree == null) {
             degree = CaptchaConstants.DEFAULT_DEGREE;
         }
@@ -281,9 +283,8 @@ public class CaptchaService {
         String captchaPngImage = "";
         WhatsUpCaptchaResultDtoDto captchaDataResult = new WhatsUpCaptchaResultDtoDto();
         try {
-            File file = resource.getFile();
-            byte[] fileContent = FileUtils.readFileToByteArray(file);
-            BufferedImage buffImg = ImageIO.read(file);
+            InputStream inputStream = resource.getInputStream();
+            BufferedImage buffImg = ImageIO.read(inputStream);
 
             BufferedImage rotatedImage = captchaWhatsUpImagesService.rotate(buffImg, rotationAngle);
 
