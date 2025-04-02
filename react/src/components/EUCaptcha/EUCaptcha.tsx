@@ -55,15 +55,18 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
 }) => {
   const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null);
   const [userInput, setUserInput] = useState('');
+  const [rotationAngle, setRotationAngle] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [useAudio, setUseAudio] = useState(false);
 
+  const EuCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXh0dWFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.MJfBKb01QKVVafes5DoDDoRAVNios3H_nrWYWZZ30Vs";
+
   // Common request headers with required xJwtString token
   const getCommonHeaders = useCallback(() => ({
     'Accept': 'application/json',
-    'xJwtString': 'EuCaptchaToken'
+    'xJwtString': EuCaptchaToken
   }), []);
 
   const fetchCaptcha = useCallback(async () => {
@@ -203,6 +206,18 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
     setUseAudio(!useAudio);
   };
 
+  const handleRotationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Get the raw value from the slider
+    const rawValue = parseInt(e.target.value, 10);
+    
+    // Round to the nearest 15 degrees
+    const roundedAngle = Math.round(rawValue / 15) * 15;
+    
+    // Update rotation angle state and user input
+    setRotationAngle(roundedAngle);
+    setUserInput(roundedAngle.toString());
+  };
+
   useEffect(() => {
     fetchCaptcha();
   }, [fetchCaptcha]);
@@ -221,7 +236,7 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
         {!loading && captchaData && (
           <>
             <div className="eu-captcha-challenge">
-              {!useAudio && captchaData.captchaImg && (
+              {!useAudio && captchaData.captchaImg && captchaType !== 'WHATS_UP' && (
                 <img 
                   src={captchaData.captchaImg.startsWith('data:') 
                     ? captchaData.captchaImg 
@@ -230,6 +245,23 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
                   alt="CAPTCHA" 
                   className="eu-captcha-image" 
                 />
+              )}
+
+              {!useAudio && captchaData.captchaImg && captchaType === 'WHATS_UP' && (
+                <div className="eu-captcha-rotation-wrapper">
+                  <img 
+                    src={captchaData.captchaImg.startsWith('data:') 
+                      ? captchaData.captchaImg 
+                      : `data:image/png;base64,${captchaData.captchaImg}`
+                    } 
+                    alt="Rotatable CAPTCHA" 
+                    className="eu-captcha-image" 
+                    style={{
+                      transform: `rotate(${rotationAngle}deg)`,
+                      transition: 'transform 0.2s ease-out'
+                    }}
+                  />
+                </div>
               )}
               
               {useAudio && captchaData.audioCaptcha && (
@@ -268,20 +300,20 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
               )}
             </div>
             
-            {captchaType === 'WHATS_UP' && captchaData.degree !== undefined && (
+            {captchaType === 'WHATS_UP' && (
               <div className="eu-captcha-rotation-controls">
                 <label htmlFor="rotation-slider">Rotate the image to correct position:</label>
                 <input 
                   type="range" 
                   id="rotation-slider" 
                   min="0" 
-                  max="360" 
-                  step="1"
-                  value={userInput || '0'} 
-                  onChange={(e) => setUserInput(e.target.value)}
+                  max="345" // Changed to 345 (360-15) to ensure values are multiples of 15
+                  step="15"  // Set step to 15 degrees
+                  value={rotationAngle} 
+                  onChange={handleRotationChange}
                   className="eu-captcha-slider"
                 />
-                <span className="eu-captcha-rotation-value">{userInput || '0'}°</span>
+                <span className="eu-captcha-rotation-value">{rotationAngle}°</span>
               </div>
             )}
             

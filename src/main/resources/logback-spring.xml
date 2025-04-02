@@ -43,5 +43,6 @@
     <!-- LOG "com.sii.eucaptcha*" at DEBUG level -->
     <logger name="com.sii.eucaptcha" level="debug" additivity="false">
         <appender-ref ref="RollingFile" />
+        <appender-ref ref="Console" />
     </logger>
 </configuration>
