@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import './EUCaptcha.css';
+import { SignJWT } from 'jose';
 
 export interface EUCaptchaProps {
   /**
@@ -8,8 +9,10 @@ export interface EUCaptchaProps {
   apiBaseUrl: string;
   /**
    * Function called when CAPTCHA is successfully verified
+   * @param token - The CAPTCHA ID used for verification reference
+   * @param jwtToken - The xJwtString token to use in subsequent API calls
    */
-  onVerify?: (token: string) => void;
+  onVerify?: (token: string, jwtToken: string) => void;
   /**
    * Function called when CAPTCHA fails verification
    */
@@ -34,6 +37,10 @@ export interface EUCaptchaProps {
    * Whether to use capitalized letters
    */
   capitalized?: boolean;
+  /**
+   * Initial xJwtString token to use (optional)
+   */
+  initialJwtToken?: string;
 }
 
 export interface CaptchaData {
@@ -42,6 +49,30 @@ export interface CaptchaData {
   audioCaptcha?: string;
   degree?: number;
 }
+function randomNonce(length = 8) {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, dec => dec.toString(16).padStart(2, '0')).join('');
+  }
+
+async function generateJWT(payload, providedSecret) {
+    // Use the provided payload if it has keys; otherwise, add a random nonce.
+    const actualPayload = (payload && Object.keys(payload).length > 0)
+      ? payload
+      : { nonce: randomNonce() };
+  
+    // Use the provided secret or generate a random 32-byte (256-bit) secret.
+    const secret = providedSecret || crypto.getRandomValues(new Uint8Array(32));
+  
+    // Create and sign the JWT using HS256.
+    const token = await new SignJWT(actualPayload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(secret);
+  
+    return token;
+  }
 
 export const EUCaptcha: React.FC<EUCaptchaProps> = ({
   apiBaseUrl,
@@ -52,6 +83,7 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
   captchaType = 'STANDARD',
   captchaLength = 8,
   capitalized = true,
+  initialJwtToken,
 }) => {
   const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null);
   const [userInput, setUserInput] = useState('');
@@ -60,14 +92,22 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [useAudio, setUseAudio] = useState(false);
+  const [jwtToken, setJwtToken] = useState<string>(initialJwtToken || '');
 
-  const EuCaptchaToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUZXh0dWFsIGV4YW1wbGUiLCJuYW1lIjoiRVVfQ0FQVENIQSIsImlhdCI6MTUxNjIzOTAyMn0.MJfBKb01QKVVafes5DoDDoRAVNios3H_nrWYWZZ30Vs";
+  // Generate a new JWT token if not provided
+  useEffect(() => {
+    if (!initialJwtToken) {
+      generateJWT(null, null).then(setJwtToken).catch(err => {
+        if (onError) onError(err);
+      });
+    }
+  }, [initialJwtToken, onError]);
 
   // Common request headers with required xJwtString token
   const getCommonHeaders = useCallback(() => ({
     'Accept': 'application/json',
-    'xJwtString': EuCaptchaToken
-  }), []);
+    'xJwtString': jwtToken
+  }), [jwtToken]);
 
   const fetchCaptcha = useCallback(async () => {
     try {
@@ -130,7 +170,14 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
       }
       
       const data = await response.json();
-      
+
+      if (response.ok) {
+        // Extract JWT token from the response headers or use the current one
+        const receivedJwtToken = response.headers.get('xJwtString') || jwtToken;
+        // Update the JWT token state
+        setJwtToken(receivedJwtToken);
+      }
+
       setCaptchaData({
         captchaId: data.captchaId || '',
         captchaImg: data.captchaImg || '',
@@ -179,7 +226,15 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
       // Handle both successful responses and 400 error responses
       if (response.ok && data.responseCaptcha === 'success') {
         setSuccess(true);
-        if (onVerify) onVerify(captchaData.captchaId || '');
+        
+        // Extract JWT token from the response headers or use the current one
+        const receivedJwtToken = response.headers.get('xJwtString') || jwtToken;
+        
+        // Update the JWT token state
+        setJwtToken(receivedJwtToken);
+        
+        // Call onVerify with both the captcha ID and JWT token
+        if (onVerify) onVerify(captchaData.captchaId || '', receivedJwtToken);
       } else {
         // Even if status is 400, we might get a JSON response that we can use
         setError(data.message || 'Incorrect CAPTCHA response. Please try again.');
@@ -194,7 +249,7 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
       setLoading(false);
       setUserInput('');
     }
-  }, [captchaData, userInput, apiBaseUrl, captchaType, useAudio, reloadCaptcha, onVerify, onError, getCommonHeaders]);
+  }, [captchaData, userInput, apiBaseUrl, captchaType, useAudio, reloadCaptcha, onVerify, onError, getCommonHeaders, jwtToken]);
 
   const handleRefresh = () => {
     setUserInput('');
@@ -219,8 +274,9 @@ export const EUCaptcha: React.FC<EUCaptchaProps> = ({
   };
 
   useEffect(() => {
+    if(!jwtToken) return;
     fetchCaptcha();
-  }, [fetchCaptcha]);
+  }, [fetchCaptcha, jwtToken]);
 
   return (
     <div className={`eu-captcha-container ${className}`}>

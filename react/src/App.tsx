@@ -5,16 +5,19 @@ import { EUCaptcha } from './components/EUCaptcha'
 function App() {
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [token, setToken] = useState<string>('');
+  const [jwtToken, setJwtToken] = useState<string>('');
   const [apiBaseUrl, setApiBaseUrl] = useState<string>('http://localhost:8080');
   const [captchaLanguage, setCaptchaLanguage] = useState<string>('en-GB');
   const [captchaType, setCaptchaType] = useState<'STANDARD' | 'WHATS_UP' | 'SLIDING'>('STANDARD');
   const [captchaLength, setCaptchaLength] = useState<number>(8);
   const [capitalized, setCapitalized] = useState<boolean>(true);
 
-  const handleVerify = (token: string) => {
+  const handleVerify = (token: string, jwtToken: string) => {
     setToken(token);
+    setJwtToken(jwtToken);
     setCaptchaVerified(true);
     console.log('CAPTCHA verified with token:', token);
+    console.log('JWT token for subsequent calls:', jwtToken);
   };
 
   const handleError = (error: Error) => {
@@ -23,12 +26,20 @@ function App() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert(captchaVerified ? 'Form submitted successfully!' : 'Please verify the CAPTCHA first.');
+    
+    // Example of using the JWT token in a subsequent API call
+    if (captchaVerified) {
+      console.log(`Making authenticated request with JWT: ${jwtToken}`);
+      alert(`Form submitted successfully! JWT token: ${jwtToken}`);
+    } else {
+      alert('Please verify the CAPTCHA first.');
+    }
   };
 
   const handleReset = () => {
     setCaptchaVerified(false);
     setToken('');
+    setJwtToken('');
   };
 
   return (
@@ -73,6 +84,7 @@ function App() {
                 captchaType={captchaType}
                 captchaLength={captchaLength}
                 capitalized={capitalized}
+                initialJwtToken={jwtToken}
               />
             </div>
             
@@ -179,8 +191,9 @@ function App() {
             <code>{`import { EUCaptcha } from './components/EUCaptcha';
 
 // In your component:
-const handleVerify = (token) => {
+const handleVerify = (token, jwtToken) => {
   console.log('CAPTCHA verified with token:', token);
+  console.log('JWT token for subsequent calls:', jwtToken);
 };
 
 const handleError = (error) => {
@@ -196,6 +209,7 @@ return (
     captchaType="STANDARD"
     captchaLength={8}
     capitalized={true}
+    initialJwtToken={savedJwtToken} // Optional: Pass a previously saved token
   />
 );`}</code>
           </pre>
@@ -206,7 +220,8 @@ return (
           <ul>
             <li>Replace <code>apiBaseUrl</code> with your actual EU CAPTCHA service URL</li>
             <li>The component handles the CAPTCHA verification process</li>
-            <li>Use <code>onVerify</code> callback to get the verification token</li>
+            <li>Use <code>onVerify(token, jwtToken)</code> callback to get the verification token and JWT token</li>
+            <li>The JWT token (xJwtString) is required for subsequent API calls to the EU CAPTCHA service</li>
             <li>Use <code>onError</code> callback to handle any errors</li>
             <li>Available CAPTCHA types: STANDARD, WHATS_UP (image rotation), SLIDING</li>
             <li>Use proper locale format like "en-GB", "fr-FR", etc.</li>
@@ -219,7 +234,11 @@ return (
       {token && (
         <div className="verification-result">
           <h3>Verification Result</h3>
-          <p>Token: <code>{token}</code></p>
+          <p>CAPTCHA Token: <code>{token}</code></p>
+          <p>JWT Token: <code>{jwtToken}</code></p>
+          <p className="token-usage-note">
+            <strong>Note:</strong> Include this JWT token in the <code>xJwtString</code> header for subsequent API calls.
+          </p>
         </div>
       )}
 
