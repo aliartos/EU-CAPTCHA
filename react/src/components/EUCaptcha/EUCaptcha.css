@@ -29,6 +29,9 @@
   border-radius: 4px;
   text-align: center;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .eu-captcha-success {
@@ -38,6 +41,37 @@
   border-radius: 4px;
   text-align: center;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eu-captcha-error-refresh,
+.eu-captcha-success-refresh {
+  margin-top: 5px;
+  padding: 4px 8px;
+  background-color: transparent;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.eu-captcha-error-refresh {
+  color: #c62828;
+}
+
+.eu-captcha-error-refresh:hover {
+  background-color: rgba(198, 40, 40, 0.1);
+}
+
+.eu-captcha-success-refresh {
+  color: #2e7d32;
+}
+
+.eu-captcha-success-refresh:hover {
+  background-color: rgba(46, 125, 50, 0.1);
 }
 
 .eu-captcha-challenge {
@@ -78,11 +112,27 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  animation: pulse-highlight 1s ease-in-out;
 }
 
 .eu-captcha-refresh-btn:hover,
 .eu-captcha-toggle-btn:hover {
   background-color: #f0f0f0;
+}
+
+@keyframes pulse-highlight {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 5px rgba(25, 118, 210, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(25, 118, 210, 0);
+  }
 }
 
 .eu-captcha-input-container {
